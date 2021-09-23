@@ -1,0 +1,15 @@
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\bin\Debug\WaveAnalyzer.exe.config
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\bin\Debug\WaveAnalyzer.exe
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\bin\Debug\WaveAnalyzer.pdb
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\WaveAnalyzer.csproj.AssemblyReference.cache
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\MainWindow.g.cs
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\App.g.cs
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\WaveAnalyzer_MarkupCompile.cache
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\WaveAnalyzer_MarkupCompile.lref
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\MainWindow.baml
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\WaveAnalyzer.g.resources
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\WaveAnalyzer.Properties.Resources.resources
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\WaveAnalyzer.csproj.GenerateResource.cache
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\WaveAnalyzer.csproj.CoreCompileInputs.cache
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\WaveAnalyzer.exe
+C:\Users\Joshua\source\repos\WaveAnalyzer\WaveAnalyzer\obj\Debug\WaveAnalyzer.pdb
