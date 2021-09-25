@@ -20,9 +20,49 @@ namespace WaveAnalyzer
     /// </summary>
     public partial class MainWindow : Window
     {
+        double[] samples;
+        complex[] values;
+        bool isConverted;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            samples = new double[] { 0.0, 0.707, 1, 0.707, 0, -0.707, -1, -0.707 };
+            values = new complex[samples.Length];
+
+            for (int i = 0; i < samples.Length; ++i)
+            {
+                textBlock.Text += samples[i] + ", ";
+            }
+        }
+
+        public void fourierHandler(object sender, RoutedEventArgs e)
+        {
+            if (isConverted)
+            {
+                samples = Fourier.inverseDFT(values);
+
+                textBlock.Text = "";
+                
+                for (int i = 0; i < samples.Length; ++i)
+                {
+                    textBlock.Text += Math.Round(samples[i], 3) + ", ";
+                }
+            }
+            else
+            {
+                values = Fourier.DFT(samples);
+
+                textBlock.Text = "";
+
+                for (int i = 0; i < values.Length; ++i)
+                {
+                    textBlock.Text += "(" + Math.Round(values[i].real, 3) + ',' + Math.Round(values[i].imag, 3) + "), ";
+                }
+            }
+
+            isConverted = !isConverted;
         }
     }
 }

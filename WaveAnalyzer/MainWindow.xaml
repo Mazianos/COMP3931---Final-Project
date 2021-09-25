@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:WaveAnalyzer"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
+    <Grid Name="root">
+        <TextBlock Name="textBlock" HorizontalAlignment="Center" Text="" TextWrapping="Wrap" VerticalAlignment="Center"/>
+        <Button Click="fourierHandler" Content="Fourier Me" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Center"/>
     </Grid>
 </Window>
