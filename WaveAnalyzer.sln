@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveAnalyzer", "WaveAnalyzer\WaveAnalyzer.csproj", "{DCFC3770-FDDC-469F-B5A0-76882FF6BCC0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveAnalyzer", "WaveAnalyzer\WaveAnalyzer.csproj", "{8D29C159-F9DC-42EB-9576-DEBAF00B830D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DCFC3770-FDDC-469F-B5A0-76882FF6BCC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DCFC3770-FDDC-469F-B5A0-76882FF6BCC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DCFC3770-FDDC-469F-B5A0-76882FF6BCC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DCFC3770-FDDC-469F-B5A0-76882FF6BCC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D29C159-F9DC-42EB-9576-DEBAF00B830D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D29C159-F9DC-42EB-9576-DEBAF00B830D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D29C159-F9DC-42EB-9576-DEBAF00B830D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D29C159-F9DC-42EB-9576-DEBAF00B830D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {AD670CC0-7859-47ED-961B-2C8B232E05A7}
+		SolutionGuid = {8BF44A6C-36EB-4BFC-AE3D-BD0008CB6D03}
 	EndGlobalSection
 EndGlobal
