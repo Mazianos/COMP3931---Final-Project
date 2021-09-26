@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace WaveAnalyzer
     /// </summary>
     public partial class MainWindow : Window
     {
+        string filepath = "wave.txt";
         double[] samples;
         complex[] values;
         bool isConverted;
@@ -51,17 +53,21 @@ namespace WaveAnalyzer
             }
         }
 
-        public void fourierHandler(object sender, RoutedEventArgs e)
+        public async void fourierHandler(object sender, RoutedEventArgs e)
         {
+            //File.Create("wave.txt");
             if (isConverted)
             {
                 samples = Fourier.inverseDFT(values);
 
                 textBlock.Text = "";
+                File.WriteAllText(filepath, String.Empty);
                 
                 for (int i = 0; i < samples.Length; ++i)
                 {
-                    textBlock.Text += Math.Round(samples[i], 3) + ", ";
+                    string text = Math.Round(samples[i], 3) + ", ";
+                    textBlock.Text += text;
+                    File.AppendAllText(filepath, text);
                 }
             }
             else
@@ -69,10 +75,13 @@ namespace WaveAnalyzer
                 values = Fourier.DFT(samples);
 
                 textBlock.Text = "";
+                File.WriteAllText(filepath, String.Empty);
 
                 for (int i = 0; i < values.Length; ++i)
                 {
-                    textBlock.Text += "(" + Math.Round(values[i].real, 3) + ',' + Math.Round(values[i].imag, 3) + "), ";
+                    string text = "(" + Math.Round(values[i].real, 3) + ',' + Math.Round(values[i].imag, 3) + "), ";
+                    textBlock.Text += text;
+                    File.AppendAllText(filepath, text);
                 }
             }
 
