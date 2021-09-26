@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.IO;
 
 namespace WaveAnalyzer
 {
@@ -27,8 +28,21 @@ namespace WaveAnalyzer
         public MainWindow()
         {
             InitializeComponent();
+        }
 
-            samples = new double[] { 0.0, 0.707, 1, 0.707, 0, -0.707, -1, -0.707 };
+        public void fileOpenHandler(object sender, RoutedEventArgs e)
+        {
+            string openPath = "SoundFile1.txt";
+
+            TextReader fileReader = File.OpenText(openPath);
+            string currentSample;
+            List<double> sampleList = new List<double>();
+            while ((currentSample = fileReader.ReadLine()) != null)
+            {
+                sampleList.Add(double.Parse(currentSample));
+            }
+
+            samples = sampleList.ToArray();
             values = new complex[samples.Length];
 
             for (int i = 0; i < samples.Length; ++i)
@@ -63,6 +77,11 @@ namespace WaveAnalyzer
             }
 
             isConverted = !isConverted;
+        }
+
+        private void fileSaveHandler(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

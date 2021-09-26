@@ -1,20 +1,20 @@
 ﻿WaveAnalyzer
-1.0.0.0
+
 
 winexe
 C#
 .cs
-D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Release\netcoreapp3.1\
 WaveAnalyzer
 none
 false
-TRACE;DEBUG;NETCOREAPP;NETCOREAPP3_1;
+TRACE;RELEASE;NETCOREAPP;NETCOREAPP3_1;
 D:\COMP3931\Wave Analyzer\WaveAnalyzer\App.xaml
 11407045341
 
-6-2003084380
+4504944128
 199-1336183941
 MainWindow.xaml;
 
-False
+True
 

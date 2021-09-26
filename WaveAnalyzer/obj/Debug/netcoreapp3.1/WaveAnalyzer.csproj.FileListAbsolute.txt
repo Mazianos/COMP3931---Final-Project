@@ -18,3 +18,23 @@ C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\Wa
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.dll
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.pdb
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.genruntimeconfig.cache
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\bin\Debug\netcoreapp3.1\WaveAnalyzer.exe
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\bin\Debug\netcoreapp3.1\WaveAnalyzer.deps.json
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\bin\Debug\netcoreapp3.1\WaveAnalyzer.runtimeconfig.json
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\bin\Debug\netcoreapp3.1\WaveAnalyzer.runtimeconfig.dev.json
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\bin\Debug\netcoreapp3.1\WaveAnalyzer.dll
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\bin\Debug\netcoreapp3.1\WaveAnalyzer.pdb
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.csproj.AssemblyReference.cache
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\MainWindow.g.cs
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\App.g.cs
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer_MarkupCompile.cache
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer_MarkupCompile.lref
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\MainWindow.baml
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.g.resources
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.GeneratedMSBuildEditorConfig.editorconfig
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.AssemblyInfoInputs.cache
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.AssemblyInfo.cs
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.csproj.CoreCompileInputs.cache
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.dll
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.pdb
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.genruntimeconfig.cache
