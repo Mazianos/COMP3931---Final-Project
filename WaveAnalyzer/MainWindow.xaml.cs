@@ -13,16 +13,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.IO;
 
 namespace WaveAnalyzer
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        string filepath = "wave.txt";
+        const string filepath = "SoundFile1.txt";
         double[] samples;
         complex[] values;
         bool isConverted;
@@ -34,9 +30,10 @@ namespace WaveAnalyzer
 
         public void fileOpenHandler(object sender, RoutedEventArgs e)
         {
-            string openPath = "SoundFile1.txt";
+            isConverted = false;
 
-            TextReader fileReader = File.OpenText(openPath);
+            // Parse sample values line by line.
+            TextReader fileReader = File.OpenText(filepath);
             string currentSample;
             List<double> sampleList = new List<double>();
             while ((currentSample = fileReader.ReadLine()) != null)
@@ -46,28 +43,51 @@ namespace WaveAnalyzer
 
             samples = sampleList.ToArray();
             values = new complex[samples.Length];
+            textBlock.Text = "";
 
             for (int i = 0; i < samples.Length; ++i)
             {
                 textBlock.Text += samples[i] + ", ";
             }
+
+            fileReader.Close();
+
+            fourierButton.IsEnabled = true;
         }
 
-        public async void fourierHandler(object sender, RoutedEventArgs e)
+        private void fileSaveHandler(object sender, RoutedEventArgs e)
         {
-            //File.Create("wave.txt");
+            if (isConverted)
+            {
+                // Convert values back to samples.
+                samples = Fourier.inverseDFT(values);
+                
+                isConverted = false;
+            }
+
+            // Write sample values to a text file.
+            File.WriteAllText(filepath, String.Empty);
+
+            for (int i = 0; i < samples.Length; ++i)
+            {
+                File.AppendAllText(filepath, Math.Round(samples[i], 3) + "\n");
+            }
+        }
+
+        /**
+         * Converts between samples and frequency bins.
+         */
+        public void fourierHandler(object sender, RoutedEventArgs e)
+        {
             if (isConverted)
             {
                 samples = Fourier.inverseDFT(values);
 
                 textBlock.Text = "";
-                File.WriteAllText(filepath, String.Empty);
-                
+
                 for (int i = 0; i < samples.Length; ++i)
                 {
-                    string text = Math.Round(samples[i], 3) + ", ";
-                    textBlock.Text += text;
-                    File.AppendAllText(filepath, text);
+                    textBlock.Text += Math.Round(samples[i], 3) + ", ";
                 }
             }
             else
@@ -75,22 +95,14 @@ namespace WaveAnalyzer
                 values = Fourier.DFT(samples);
 
                 textBlock.Text = "";
-                File.WriteAllText(filepath, String.Empty);
 
                 for (int i = 0; i < values.Length; ++i)
                 {
-                    string text = "(" + Math.Round(values[i].real, 3) + ',' + Math.Round(values[i].imag, 3) + "), ";
-                    textBlock.Text += text;
-                    File.AppendAllText(filepath, text);
+                    textBlock.Text += "(" + Math.Round(values[i].real, 3) + ',' + Math.Round(values[i].imag, 3) + "), ";
                 }
             }
 
             isConverted = !isConverted;
-        }
-
-        private void fileSaveHandler(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }

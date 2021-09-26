@@ -1,10 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "91r+yFYUBHNO9HOapckR3W1+UEWspcEqlLfdLDxA45g+ZcZ5Zelcqt+EYhOChAwt7/dFLYvUhu4xMR1sMEnSXQ==",
+  "dgSpecHash": "IEKJ6oVevYkGt0dOUfd682BjEXP+DWpU2zmg5ybjDjcvNl4bN3uVYB+BDDBnUOVU6vDPpspdK9biPUTx2aoOvA==",
   "success": true,
-  "projectFilePath": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\Mazianos\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\3.1.19\\microsoft.netcore.app.host.win-x64.3.1.19.nupkg.sha512"
-  ],
+  "projectFilePath": "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj",
+  "expectedPackageFiles": [],
   "logs": []
 }

@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid Name="root">
-        <TextBlock Name="textBlock" HorizontalAlignment="Center" Text="Nothing is open right now"  TextWrapping="Wrap" VerticalAlignment="Center"/>
-        <Button Click="fourierHandler" Content="Fourier Me" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Center"/>
+        <TextBlock Name="textBlock" FontSize="24" HorizontalAlignment="Center" Text="Nothing is open right now"  TextWrapping="Wrap" VerticalAlignment="Center"/>
+        <Button Name="fourierButton" Click="fourierHandler" FontSize="20" IsEnabled="False" Content="Fourier Me" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Center"/>
         <Menu VerticalAlignment="Top" Height="18">
             <MenuItem Header="File">
                 <MenuItem Name="fileOpen" Header="Open" Click="fileOpenHandler"/>
