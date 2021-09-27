@@ -60,7 +60,7 @@ namespace WaveAnalyzer
             if (isConverted)
             {
                 // Convert values back to samples.
-                samples = Fourier.inverseDFT(values);
+                samples = Fourier.inverseDFT(values, values.Length);
                 
                 isConverted = false;
             }
@@ -81,7 +81,7 @@ namespace WaveAnalyzer
         {
             if (isConverted)
             {
-                samples = Fourier.inverseDFT(values);
+                samples = Fourier.inverseDFT(values, values.Length);
 
                 textBlock.Text = "";
 
@@ -92,7 +92,7 @@ namespace WaveAnalyzer
             }
             else
             {
-                values = Fourier.DFT(samples);
+                values = Fourier.DFT(samples, samples.Length);
 
                 textBlock.Text = "";
 

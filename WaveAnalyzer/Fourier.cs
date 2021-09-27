@@ -12,9 +12,8 @@ namespace WaveAnalyzer
 
     static class Fourier
     {
-        public static complex[] DFT(double[] s)
+        public static complex[] DFT(double[] s, int N)
         {
-            int N = s.Length;
             complex[] A = new complex[N];
 
             for (int f = 0; f < N; ++f)
@@ -32,9 +31,8 @@ namespace WaveAnalyzer
             return A;
         }
 
-        public static double[] inverseDFT(complex[] A)
+        public static double[] inverseDFT(complex[] A, int N)
         {
-            int N = A.Length;
             double[] s = new double[N];
 
             for (int t = 0; t < N; ++t)
