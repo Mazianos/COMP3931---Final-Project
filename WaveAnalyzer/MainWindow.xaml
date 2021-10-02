@@ -8,12 +8,15 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid Name="root">
         <TextBlock Name="textBlock" FontSize="24" HorizontalAlignment="Center" Text="Nothing is open right now"  TextWrapping="Wrap" VerticalAlignment="Center"/>
-        <Button Name="fourierButton" Click="fourierHandler" FontSize="20" IsEnabled="False" Content="Fourier Me" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Center"/>
-        <Menu VerticalAlignment="Top" Height="18">
-            <MenuItem Header="File">
-                <MenuItem Name="fileOpen" Header="Open" Click="fileOpenHandler"/>
-                <MenuItem Name="fileSave" Header="Save" Click="fileSaveHandler"/>
+        <Button Name="fourierButton" Click="FourierHandler" FontSize="20" IsEnabled="False" Content="Fourier Me" HorizontalAlignment="Center" Margin="0,100,0,0" VerticalAlignment="Center"/>
+        <Menu VerticalAlignment="Top" Height="20">
+            <MenuItem Header="File" FontSize="14">
+                <MenuItem Name="fileOpen" Header="Open" Click="FileOpenHandler"/>
+                <MenuItem Name="fileSave" Header="Save" Click="FileSaveHandler"/>
             </MenuItem>
         </Menu>
+        <ScrollViewer Name="waveViewer" Margin="0,50,0,0" HorizontalScrollBarVisibility="Visible">
+            <Canvas Name="waveCanvas" Height="0" Width="0" VerticalAlignment="Center" RenderTransform="1 0 0 -1 0 0"/>
+        </ScrollViewer>
     </Grid>
 </Window>

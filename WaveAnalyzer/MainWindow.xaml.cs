@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace WaveAnalyzer
 {
@@ -20,7 +22,7 @@ namespace WaveAnalyzer
     {
         const string filepath = "SoundFile1.txt";
         double[] samples;
-        complex[] values;
+        Complex[] values;
         bool isConverted;
 
         public MainWindow()
@@ -28,45 +30,136 @@ namespace WaveAnalyzer
             InitializeComponent();
         }
 
-        public void fileOpenHandler(object sender, RoutedEventArgs e)
+        public void FileOpenHandler(object sender, RoutedEventArgs e)
         {
-            isConverted = false;
+            // Opens the open file dialog box.
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "WAV files (*.wav)|*.wav" +
+                "|All files (*.*)|*.*";
 
-            // Parse sample values line by line.
-            TextReader fileReader = File.OpenText(filepath);
-            string currentSample;
-            List<double> sampleList = new List<double>();
-            while ((currentSample = fileReader.ReadLine()) != null)
+            // Returns true when a file is opened. Return if not opened.
+            if (openFileDialog.ShowDialog() != true)
             {
-                sampleList.Add(double.Parse(currentSample));
+                return;
             }
 
-            samples = sampleList.ToArray();
-            values = new complex[samples.Length];
-            textBlock.Text = "";
+            // Read the wave file in bytes.
+            byte[] waveBytes = File.ReadAllBytes(openFileDialog.FileName);
 
-            for (int i = 0; i < samples.Length; ++i)
+            // Get the header information.
+            WaveHeader waveHeader = new WaveHeader();
+            waveHeader.chunkID = ByteConverter.ToInt32BigEndian(waveBytes, 0);
+            waveHeader.chunkSize = ByteConverter.ToInt32(waveBytes, 4);
+            waveHeader.format = ByteConverter.ToInt32BigEndian(waveBytes, 8);
+            waveHeader.subchunk1ID = ByteConverter.ToInt32BigEndian(waveBytes, 12);
+            waveHeader.subchunk1Size = ByteConverter.ToInt32(waveBytes, 16);
+            waveHeader.audioFormat = ByteConverter.ToInt16(waveBytes, 20);
+            waveHeader.numChannels = ByteConverter.ToInt16(waveBytes, 22);
+            waveHeader.sampleRate = ByteConverter.ToInt32(waveBytes, 24);
+            waveHeader.byteRate = ByteConverter.ToInt32(waveBytes, 28);
+            waveHeader.blockAlign = ByteConverter.ToInt16(waveBytes, 32);
+            waveHeader.bitsPerSample = ByteConverter.ToInt16(waveBytes, 34);
+            waveHeader.subchunk2ID = ByteConverter.ToInt32BigEndian(waveBytes, 36);
+            waveHeader.subchunk2Size = ByteConverter.ToInt32(waveBytes, 40);
+
+            List<float> leftChannel = new List<float>();
+            // rightChannel (stereo) will only be needed if the number of channels is not 1 (mono).
+            List<float> rightChannel = waveHeader.numChannels != 1 ? new List<float>() : null;
+
+            // Skip 44 bytes to get to the sound data.
+            int byteIndex = 44;
+            int samples = waveBytes.Length - byteIndex;
+            
+            // Iterate through the samples and add the float values to their respective channels.
+            // For mono, samples are two bytes each. For stereo, it is four bytes, first two left, then two right.
+            for (int i = 0; i < samples; ++i)
             {
-                textBlock.Text += samples[i] + ", ";
+                leftChannel.Add(ByteConverter.TwoBytesToFloat(waveBytes, i));
+                byteIndex += 2;
+
+                if (rightChannel != null)
+                {
+                    rightChannel.Add(ByteConverter.TwoBytesToFloat(waveBytes, i));
+                    byteIndex += 2;
+                }
             }
 
-            fileReader.Close();
+            Trace.WriteLine("Done!");
 
-            fourierButton.IsEnabled = true;
+            // Drawing.
+            SolidColorBrush redBrush = new SolidColorBrush();
+            redBrush.Color = Colors.Red;
+            Polyline wavePolyline = new Polyline();
+            wavePolyline.Stroke = redBrush;
+            wavePolyline.StrokeThickness = 1;
+            PointCollection pointCollection = new PointCollection();
+
+            double min = leftChannel.Min();
+            double denom = leftChannel.Max() - min;
+            
+            for (int i = 0; i < leftChannel.Count() - 1; ++i)
+            {
+                Point point = new Point();
+                point.X = i / 20;
+                point.Y = (leftChannel[i] - min) / denom * 100;
+                pointCollection.Add(point);
+            }
+
+            wavePolyline.Points = pointCollection;
+            
+            waveCanvas.Children.Add(wavePolyline);
+
+            waveCanvas.Width = leftChannel.Count() / 50;
+            //waveCanvas.Margin = new System.Windows.Thickness(0, leftChannel.Max(), 0, 0);
+
+
+            /*TextReader fileReader;
+
+            
+            if (openFileDialog.ShowDialog() == true)
+            {
+                // Filepath is stored in .FileName.
+                fileReader = File.OpenText(openFileDialog.FileName);
+                isConverted = false;
+
+                // Parse sample values line by line.
+
+                string currentSample;
+                List<double> sampleList = new List<double>();
+                while ((currentSample = fileReader.ReadLine()) != null)
+                {
+                    sampleList.Add(double.Parse(currentSample));
+                }
+
+                samples = sampleList.ToArray();
+                values = Fourier.DFT(samples, 8);
+                Fourier.divideByN(values, values.Length);
+
+                double[] amplitudes = Fourier.getAmplitudes(values);
+                Fourier.printDoubles(amplitudes);
+
+                fileReader.Close();
+
+                fourierButton.IsEnabled = true;
+            }
+
+            */
+
+
         }
 
-        private void fileSaveHandler(object sender, RoutedEventArgs e)
+        private void FileSaveHandler(object sender, RoutedEventArgs e)
         {
             if (isConverted)
             {
                 // Convert values back to samples.
-                samples = Fourier.inverseDFT(values, values.Length);
+                samples = Fourier.InverseDFT(values, values.Length);
                 
                 isConverted = false;
             }
 
             // Write sample values to a text file.
-            File.WriteAllText(filepath, String.Empty);
+            File.WriteAllText(filepath, string.Empty);
 
             for (int i = 0; i < samples.Length; ++i)
             {
@@ -77,11 +170,11 @@ namespace WaveAnalyzer
         /**
          * Converts between samples and frequency bins.
          */
-        public void fourierHandler(object sender, RoutedEventArgs e)
+        public void FourierHandler(object sender, RoutedEventArgs e)
         {
             if (isConverted)
             {
-                samples = Fourier.inverseDFT(values, values.Length);
+                samples = Fourier.InverseDFT(values, values.Length);
 
                 textBlock.Text = "";
 
@@ -93,6 +186,7 @@ namespace WaveAnalyzer
             else
             {
                 values = Fourier.DFT(samples, samples.Length);
+                Fourier.DivideByN(values, values.Length);
 
                 textBlock.Text = "";
 
