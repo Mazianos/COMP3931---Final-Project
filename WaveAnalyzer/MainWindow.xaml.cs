@@ -62,24 +62,24 @@ namespace WaveAnalyzer
             waveHeader.subchunk2ID = ByteConverter.ToInt32BigEndian(waveBytes, 36);
             waveHeader.subchunk2Size = ByteConverter.ToInt32(waveBytes, 40);
 
-            List<float> leftChannel = new List<float>();
+            List<short> leftChannel = new List<short>();
             // rightChannel (stereo) will only be needed if the number of channels is not 1 (mono).
-            List<float> rightChannel = waveHeader.numChannels != 1 ? new List<float>() : null;
+            List<short> rightChannel = waveHeader.numChannels != 1 ? new List<short>() : null;
 
             // Skip 44 bytes to get to the sound data.
             int byteIndex = 44;
             int samples = waveBytes.Length - byteIndex;
             
-            // Iterate through the samples and add the float values to their respective channels.
+            // Iterate through the samples and push the float values to their respective channel lists.
             // For mono, samples are two bytes each. For stereo, it is four bytes, first two left, then two right.
-            for (int i = 0; i < samples; ++i)
+            while (byteIndex < samples)
             {
-                leftChannel.Add(ByteConverter.TwoBytesToFloat(waveBytes, i));
+                leftChannel.Add(ByteConverter.ToInt16(waveBytes, byteIndex));
                 byteIndex += 2;
 
                 if (rightChannel != null)
                 {
-                    rightChannel.Add(ByteConverter.TwoBytesToFloat(waveBytes, i));
+                    rightChannel.Add(ByteConverter.ToInt16(waveBytes, byteIndex));
                     byteIndex += 2;
                 }
             }
@@ -87,21 +87,26 @@ namespace WaveAnalyzer
             Trace.WriteLine("Done!");
 
             // Drawing.
-            SolidColorBrush redBrush = new SolidColorBrush();
-            redBrush.Color = Colors.Red;
-            Polyline wavePolyline = new Polyline();
-            wavePolyline.Stroke = redBrush;
-            wavePolyline.StrokeThickness = 1;
+            SolidColorBrush redBrush = new SolidColorBrush
+            {
+                Color = Colors.Red
+            };
+            Polyline wavePolyline = new Polyline
+            {
+                Stroke = redBrush,
+                StrokeThickness = 1
+            };
             PointCollection pointCollection = new PointCollection();
 
-            double min = leftChannel.Min();
-            double denom = leftChannel.Max() - min;
-            
-            for (int i = 0; i < leftChannel.Count() - 1; ++i)
+            int min = leftChannel.Min();
+            float denom = leftChannel.Max() - min;
+            for (int i = 0; i < leftChannel.Count(); i += 10)
             {
-                Point point = new Point();
-                point.X = i / 20;
-                point.Y = (leftChannel[i] - min) / denom * 100;
+                Point point = new Point()
+                {
+                    X = i,
+                    Y = (leftChannel[i] - min) / denom * 500
+                };
                 pointCollection.Add(point);
             }
 
@@ -109,7 +114,7 @@ namespace WaveAnalyzer
             
             waveCanvas.Children.Add(wavePolyline);
 
-            waveCanvas.Width = leftChannel.Count() / 50;
+            waveCanvas.Width = leftChannel.Count();
             //waveCanvas.Margin = new System.Windows.Thickness(0, leftChannel.Max(), 0, 0);
 
 

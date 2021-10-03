@@ -1,9 +1,10 @@
-﻿namespace WaveAnalyzer
+﻿using System;
+using System.Diagnostics;
+
+namespace WaveAnalyzer
 {
     public static class ByteConverter
     {
-        public static float TwoBytesToFloat(byte[] buffer, int i) => buffer[i] | (buffer[i + 1] << 8);
-
         public static short ToInt16(byte[] buffer, int i) => (short)(buffer[i] | (buffer[i + 1] << 8));
 
         public static int ToInt32(byte[] buffer, int i) => buffer[i] | (buffer[i + 1] << 8) | (buffer[i + 2] << 16) | (buffer[i + 3] << 24);
