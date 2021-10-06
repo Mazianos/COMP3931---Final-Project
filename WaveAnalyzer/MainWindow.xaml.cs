@@ -20,17 +20,25 @@ namespace WaveAnalyzer
 {
     public partial class MainWindow : Window
     {
-        const string filepath = "SoundFile1.txt";
-        double[] samples;
-        Complex[] values;
-        bool isConverted;
+        private Wave wave;
+        private WaveDrawer waveDrawer;
+        ImageSourceConverter converter;
+        private bool isPlaying;
 
         public MainWindow()
         {
             InitializeComponent();
+
+            // Set icon images.
+            converter = new ImageSourceConverter();
+            OpenIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\open.png"));
+            SaveIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\save.png"));
+            PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"));
+            StopIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\stop.png"));
+            RecordIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\record.png"));
         }
 
-        public void FileOpenHandler(object sender, RoutedEventArgs e)
+        public void OpenHandler(object sender, RoutedEventArgs e)
         {
             // Opens the open file dialog box.
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -44,79 +52,26 @@ namespace WaveAnalyzer
             }
 
             // Read the wave file in bytes.
-            byte[] waveBytes = File.ReadAllBytes(openFileDialog.FileName);
-
-            // Get the header information.
-            WaveHeader waveHeader = new WaveHeader();
-            waveHeader.chunkID = ByteConverter.ToInt32BigEndian(waveBytes, 0);
-            waveHeader.chunkSize = ByteConverter.ToInt32(waveBytes, 4);
-            waveHeader.format = ByteConverter.ToInt32BigEndian(waveBytes, 8);
-            waveHeader.subchunk1ID = ByteConverter.ToInt32BigEndian(waveBytes, 12);
-            waveHeader.subchunk1Size = ByteConverter.ToInt32(waveBytes, 16);
-            waveHeader.audioFormat = ByteConverter.ToInt16(waveBytes, 20);
-            waveHeader.numChannels = ByteConverter.ToInt16(waveBytes, 22);
-            waveHeader.sampleRate = ByteConverter.ToInt32(waveBytes, 24);
-            waveHeader.byteRate = ByteConverter.ToInt32(waveBytes, 28);
-            waveHeader.blockAlign = ByteConverter.ToInt16(waveBytes, 32);
-            waveHeader.bitsPerSample = ByteConverter.ToInt16(waveBytes, 34);
-            waveHeader.subchunk2ID = ByteConverter.ToInt32BigEndian(waveBytes, 36);
-            waveHeader.subchunk2Size = ByteConverter.ToInt32(waveBytes, 40);
-
-            List<short> leftChannel = new List<short>();
-            // rightChannel (stereo) will only be needed if the number of channels is not 1 (mono).
-            List<short> rightChannel = waveHeader.numChannels != 1 ? new List<short>() : null;
-
-            // Skip 44 bytes to get to the sound data.
-            int byteIndex = 44;
-            int samples = waveBytes.Length - byteIndex;
-            
-            // Iterate through the samples and push the float values to their respective channel lists.
-            // For mono, samples are two bytes each. For stereo, it is four bytes, first two left, then two right.
-            while (byteIndex < samples)
-            {
-                leftChannel.Add(ByteConverter.ToInt16(waveBytes, byteIndex));
-                byteIndex += 2;
-
-                if (rightChannel != null)
-                {
-                    rightChannel.Add(ByteConverter.ToInt16(waveBytes, byteIndex));
-                    byteIndex += 2;
-                }
-            }
+            wave = new Wave(openFileDialog.FileName);
 
             Trace.WriteLine("Done!");
 
             // Drawing.
-            SolidColorBrush redBrush = new SolidColorBrush
+            Color waveColor = new Color()
             {
-                Color = Colors.Red
+                R = 248,
+                G = 175,
+                B = 96,
+                A = 255
             };
-            Polyline wavePolyline = new Polyline
-            {
-                Stroke = redBrush,
-                StrokeThickness = 1
-            };
-            PointCollection pointCollection = new PointCollection();
 
-            int min = leftChannel.Min();
-            float denom = leftChannel.Max() - min;
-            for (int i = 0; i < leftChannel.Count(); i += 10)
+            waveDrawer = new WaveDrawer(waveColor);
+
+            waveDrawer.DrawWave(wave.GetLeftChannel(), ref LeftChannelCanvas, 0, root.Width);
+            if (wave.GetRightChannel() != null)
             {
-                Point point = new Point()
-                {
-                    X = i,
-                    Y = (leftChannel[i] - min) / denom * 500
-                };
-                pointCollection.Add(point);
+                waveDrawer.DrawWave(wave.GetRightChannel(), ref RightChannelCanvas, 0, root.Width);
             }
-
-            wavePolyline.Points = pointCollection;
-            
-            waveCanvas.Children.Add(wavePolyline);
-
-            waveCanvas.Width = leftChannel.Count();
-            //waveCanvas.Margin = new System.Windows.Thickness(0, leftChannel.Max(), 0, 0);
-
 
             /*TextReader fileReader;
 
@@ -153,29 +108,48 @@ namespace WaveAnalyzer
 
         }
 
-        private void FileSaveHandler(object sender, RoutedEventArgs e)
+        private void SaveHandler(object sender, RoutedEventArgs e)
         {
-            if (isConverted)
+
+        }
+
+        private void PlayPauseHandler(object sender, RoutedEventArgs e)
+        {
+            PlayPauseIcon.Source = isPlaying ? (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"))
+                : (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\pause.png"));
+            isPlaying = !isPlaying;
+        }
+
+        private void StopHandler(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void RecordHandler(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void LeftChannelScrollHandler(object sender, ScrollChangedEventArgs e)
+        {
+            if (wave != null)
             {
-                // Convert values back to samples.
-                samples = Fourier.InverseDFT(values, values.Length);
-                
-                isConverted = false;
+                waveDrawer.DrawWave(wave.GetLeftChannel(), ref LeftChannelCanvas, e.HorizontalOffset, root.Width);
             }
+        }
 
-            // Write sample values to a text file.
-            File.WriteAllText(filepath, string.Empty);
-
-            for (int i = 0; i < samples.Length; ++i)
+        private void RightChannelScrollHandler(object sender, ScrollChangedEventArgs e)
+        {
+            if (wave != null && wave.GetRightChannel() != null)
             {
-                File.AppendAllText(filepath, Math.Round(samples[i], 3) + "\n");
+                waveDrawer.DrawWave(wave.GetRightChannel(), ref RightChannelCanvas, e.HorizontalOffset, root.Width);
             }
         }
 
         /**
          * Converts between samples and frequency bins.
          */
-        public void FourierHandler(object sender, RoutedEventArgs e)
+        /*public void FourierHandler(object sender, RoutedEventArgs e)
         {
             if (isConverted)
             {
@@ -202,6 +176,6 @@ namespace WaveAnalyzer
             }
 
             isConverted = !isConverted;
-        }
+        }*/
     }
 }

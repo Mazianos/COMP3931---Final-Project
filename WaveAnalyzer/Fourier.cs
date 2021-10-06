@@ -90,6 +90,14 @@ namespace WaveAnalyzer
             }
         }
 
+        public static void PrintShorts(short[] s)
+        {
+            for (int i = 0; i < s.Length; ++i)
+            {
+                Trace.WriteLine(s[i]);
+            }
+        }
+
         public static void PrintComplex(Complex[] A)
         {
             for (int i = 0; i < A.Length; ++i)
