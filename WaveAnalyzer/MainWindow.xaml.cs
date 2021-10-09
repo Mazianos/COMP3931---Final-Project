@@ -15,19 +15,37 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using System.Runtime.InteropServices;
+
+
 
 namespace WaveAnalyzer
 {
     public partial class MainWindow : Window
     {
         const string filepath = "SoundFile1.txt";
-        double[] samples;
+        double[] samples = { 1, 2, 3, 4, 5 };
         Complex[] values;
-        bool isConverted;
+        bool isConverted, bRecording, bPlaying;
+
+        [System.ComponentModel.Browsable(false)]
+        public IntPtr Handle { get; }
+
+        [DllImport("RecordPlayLibrary.dll")]
+        static extern bool WinProc(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int wMsg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern int FindWindow(string lpClassName, String lpWindowName);
+
 
         public MainWindow()
         {
             InitializeComponent();
+            //0x0110 is the code for WM_INITDIALOG
+            //SendMessage(Handle, 0x0110, (IntPtr)null, (IntPtr)null);
         }
 
         public void FileOpenHandler(object sender, RoutedEventArgs e)
@@ -68,7 +86,7 @@ namespace WaveAnalyzer
 
             // Skip 44 bytes to get to the sound data.
             int byteIndex = 44;
-            int samples = waveBytes.Length - byteIndex;
+            int samples = waveHeader.subchunk2Size;
             
             // Iterate through the samples and push the float values to their respective channel lists.
             // For mono, samples are two bytes each. For stereo, it is four bytes, first two left, then two right.
@@ -100,12 +118,12 @@ namespace WaveAnalyzer
 
             int min = leftChannel.Min();
             float denom = leftChannel.Max() - min;
-            for (int i = 0; i < leftChannel.Count(); i += 10)
+            for (int i = 0; i < leftChannel.Count(); i += 1)
             {
                 Point point = new Point()
                 {
                     X = i,
-                    Y = (leftChannel[i] - min) / denom * 500
+                    Y = (leftChannel[i] - min) / denom * 100
                 };
                 pointCollection.Add(point);
             }
@@ -169,6 +187,59 @@ namespace WaveAnalyzer
             for (int i = 0; i < samples.Length; ++i)
             {
                 File.AppendAllText(filepath, Math.Round(samples[i], 3) + "\n");
+            }
+        }
+
+        /**
+         * Start Recording
+         */
+        public void RecordHandler(object sender, RoutedEventArgs e)
+        {
+            if (!bRecording)
+            { 
+                //0x0111 is the code for WM_COMMAND
+                //1000 is the code for IDC_RECORD_BEG
+                SendMessage(Handle, 0x0111, (IntPtr)((ushort)(((ulong)(1000)) & 0xffff)), (IntPtr)null);
+                bRecording = true;
+            } else
+            {
+                //0x0111 is the code for WM_COMMAND
+                //1001 is the code for IDC_RECORD_END
+                SendMessage(Handle, 0x0111, (IntPtr)((ushort)(((ulong)(1001)) & 0xffff)), (IntPtr)null);
+                bRecording = false;
+            }
+            
+        }
+
+        /**
+         * Stops Playing Wave
+         */
+        public void StopHandler(object sender, RoutedEventArgs e)
+        {
+            //0x0111 is the code for WM_COMMAND
+            //1004 is the code for IDC_PLAY_END
+            SendMessage(Handle, 0x0111, (IntPtr)((ushort)(((ulong)(1001)) & 0xffff)), (IntPtr)null);
+        }
+
+        /**
+         * Play/Pause Wave
+         */
+        public void PlayPauseHandler(object sender, RoutedEventArgs e)
+        {
+            if (!bPlaying)
+            {
+
+                //0x0111 is the code for WM_COMMAND
+                //1002 is the code for IDC_PLAY_BEG
+                SendMessage(Handle, 0x0111, (IntPtr)((ushort)(((ulong)(1002)) & 0xffff)), (IntPtr)null);
+                bPlaying = true;
+            }
+            else
+            {
+
+                //0x0111 is the code for WM_COMMAND
+                //1003 is the code for IDC_PLAY_PAUSE
+                SendMessage(Handle, 0x0111, (IntPtr)((ushort)(((ulong)(1003)) & 0xffff)), (IntPtr)null);
             }
         }
 
