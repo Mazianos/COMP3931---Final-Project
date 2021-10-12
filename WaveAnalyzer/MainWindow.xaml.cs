@@ -24,10 +24,30 @@ namespace WaveAnalyzer
         private WaveDrawer waveDrawer;
         ImageSourceConverter converter;
         private bool isPlaying;
+        private WaveSelector currentSelection;
+        private short[][] cutSamples;
+
+        private Color waveColor = new Color()
+        {
+            R = 248,
+            G = 175,
+            B = 96,
+            A = 255
+        };
+        private Color selectorColor = new Color()
+        {
+            R = 96,
+            G = 175,
+            B = 248,
+            A = 255
+        };
 
         public MainWindow()
         {
             InitializeComponent();
+
+            waveDrawer = new WaveDrawer(waveColor);
+            cutSamples = null;
 
             // Set icon images.
             converter = new ImageSourceConverter();
@@ -57,55 +77,8 @@ namespace WaveAnalyzer
             Trace.WriteLine("Done!");
 
             // Drawing.
-            Color waveColor = new Color()
-            {
-                R = 248,
-                G = 175,
-                B = 96,
-                A = 255
-            };
-
-            waveDrawer = new WaveDrawer(waveColor);
-
-            waveDrawer.DrawWave(wave.GetLeftChannel(), ref LeftChannelCanvas, 0, root.Width);
-            if (wave.GetRightChannel() != null)
-            {
-                waveDrawer.DrawWave(wave.GetRightChannel(), ref RightChannelCanvas, 0, root.Width);
-            }
-
-            /*TextReader fileReader;
-
-            
-            if (openFileDialog.ShowDialog() == true)
-            {
-                // Filepath is stored in .FileName.
-                fileReader = File.OpenText(openFileDialog.FileName);
-                isConverted = false;
-
-                // Parse sample values line by line.
-
-                string currentSample;
-                List<double> sampleList = new List<double>();
-                while ((currentSample = fileReader.ReadLine()) != null)
-                {
-                    sampleList.Add(double.Parse(currentSample));
-                }
-
-                samples = sampleList.ToArray();
-                values = Fourier.DFT(samples, 8);
-                Fourier.divideByN(values, values.Length);
-
-                double[] amplitudes = Fourier.getAmplitudes(values);
-                Fourier.printDoubles(amplitudes);
-
-                fileReader.Close();
-
-                fourierButton.IsEnabled = true;
-            }
-
-            */
-
-
+            ClearCanvases();
+            RedrawWaves();
         }
 
         private void SaveHandler(object sender, RoutedEventArgs e)
@@ -130,52 +103,93 @@ namespace WaveAnalyzer
 
         }
 
-        private void LeftChannelScrollHandler(object sender, ScrollChangedEventArgs e)
+        private void WaveScrollHandler(object sender, ScrollChangedEventArgs e)
+        {
+            ClearCanvases();
+            RedrawWaves();
+        }
+
+        private void ClearCanvases()
+        {
+            LeftChannelCanvas.Children.Clear();
+            RightChannelCanvas.Children.Clear();
+        }
+
+        private void RedrawWaves()
         {
             if (wave != null)
             {
-                waveDrawer.DrawWave(wave.GetLeftChannel(), ref LeftChannelCanvas, e.HorizontalOffset, root.Width);
-            }
-        }
-
-        private void RightChannelScrollHandler(object sender, ScrollChangedEventArgs e)
-        {
-            if (wave != null && wave.GetRightChannel() != null)
-            {
-                waveDrawer.DrawWave(wave.GetRightChannel(), ref RightChannelCanvas, e.HorizontalOffset, root.Width);
-            }
-        }
-
-        /**
-         * Converts between samples and frequency bins.
-         */
-        /*public void FourierHandler(object sender, RoutedEventArgs e)
-        {
-            if (isConverted)
-            {
-                samples = Fourier.InverseDFT(values, values.Length);
-
-                textBlock.Text = "";
-
-                for (int i = 0; i < samples.Length; ++i)
+                waveDrawer.DrawWave(wave.GetChannels()[0], ref LeftChannelCanvas, WaveScroll.HorizontalOffset, SystemParameters.PrimaryScreenWidth);
+                if (!wave.IsMono())
                 {
-                    textBlock.Text += Math.Round(samples[i], 3) + ", ";
+                    waveDrawer.DrawWave(wave.GetChannels()[1], ref RightChannelCanvas, WaveScroll.HorizontalOffset, SystemParameters.PrimaryScreenWidth);
                 }
+            }
+        }
+
+        private void WaveMouseDownHandler(object sender, MouseButtonEventArgs e)
+        {
+            // Select a portion of the wave from the current mouse position.
+            currentSelection = new WaveSelector(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset, selectorColor);
+
+            UpdateSelection(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset);
+        }
+
+        private void WaveMouseMoveHandler(object sender, MouseEventArgs e)
+        {
+            // Update the selection if the mouse is held down.
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                UpdateSelection(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset);
+            }
+        }
+
+        private void UpdateSelection(double xPosition)
+        {
+            // Return if no wave is found or if there is no current selection.
+            if (wave == null || currentSelection == null)
+            {
+                return;
+            }
+
+            ClearCanvases();
+
+            // Update the selection by giving it the current x position of the mouse and the relevant canvases.
+            currentSelection.UpdateSelection(xPosition, ref LeftChannelCanvas);
+            if (!wave.IsMono())
+            {
+                currentSelection.UpdateSelection(xPosition, ref RightChannelCanvas);
+            }
+
+            // Redraw the waves on top of the created selection rectangles.
+            RedrawWaves();
+        }
+
+        private void CutDeleteHandler(object sender, RoutedEventArgs e)
+        {
+            short[][] temp;
+
+            if (currentSelection.GetCurrentX() - currentSelection.GetStartX() < 0)
+            {
+                temp = wave.ExtractSamples((int)currentSelection.GetCurrentX(), (int)currentSelection.GetStartX());
             }
             else
             {
-                values = Fourier.DFT(samples, samples.Length);
-                Fourier.DivideByN(values, values.Length);
-
-                textBlock.Text = "";
-
-                for (int i = 0; i < values.Length; ++i)
-                {
-                    textBlock.Text += "(" + Math.Round(values[i].real, 3) + ',' + Math.Round(values[i].imag, 3) + "), ";
-                }
+                temp = wave.ExtractSamples((int)currentSelection.GetStartX(), (int)currentSelection.GetCurrentX());
             }
 
-            isConverted = !isConverted;
-        }*/
+            if (e.Equals(CutButton))
+            {
+                cutSamples = temp;
+            }
+
+            ClearCanvases();
+            RedrawWaves();
+        }
+
+        private void PasteHandler(object sender, RoutedEventArgs e)
+        {
+            // TODO
+        }
     }
 }

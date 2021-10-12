@@ -17,7 +17,11 @@
         <Style TargetType="Image">
             <Setter Property="Width" Value="50"/>
         </Style>
-        <Style TargetType="ScrollViewer" BasedOn="{StaticResource Primary}"/>
+        <Style TargetType="ScrollViewer" BasedOn="{StaticResource Primary}">
+            <Setter Property="HorizontalScrollBarVisibility" Value="Visible"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
+        </Style>
         <Style TargetType="ScrollBar" BasedOn="{StaticResource Primary}">
             <Setter Property="Background" Value="#50595d"/>
         </Style>

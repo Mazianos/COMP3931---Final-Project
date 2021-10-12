@@ -22,8 +22,7 @@ namespace WaveAnalyzer
         private short bitsPerSample;
         private int subchunk2ID;
         private int subchunk2Size;
-        private short[] leftChannel;
-        private short[] rightChannel;
+        private short[][] channels;
 
         public Wave(string filePath)
         {
@@ -48,40 +47,72 @@ namespace WaveAnalyzer
 
         private void ExtractSamples(byte[] data)
         {
-            // The number of samples in the left channel is halved if stereo.
-            leftChannel = numChannels != 1 ? new short[subchunk2Size / 2] : new short[subchunk2Size];
-            // rightChannel (stereo) will only be needed if the number of channels is not 1 (mono).
-            rightChannel = numChannels != 1 ? new short[subchunk2Size / 2] : null;
-
-            // Start at the data index to get the samples.
-            int byteIndex = DATA_INDEX;
-
-            // Iterate through the samples and push the float values to their respective channel lists.
-            // For mono, samples are two bytes each. For stereo, it is four bytes, first two left, then two right.
-            int leftChannelIndex = 0;
-            int rightChannelIndex = 0;
-
-            while (byteIndex < subchunk2Size)
+            // Initialize the channels 2D array where each row is a channel and every column is a sample.
+            channels = new short[numChannels][];
+            int samplesPerChannel = subchunk2Size / 2 / numChannels;
+            for (short i = 0; i < numChannels; ++i)
             {
-                leftChannel[leftChannelIndex++] = ByteConverter.ToInt16(data, byteIndex);
-                byteIndex += 2;
+                channels[i] = new short[samplesPerChannel];
+            }
 
-                if (rightChannel != null)
+            // Iterate through the samples and push the float values to their respective channel arrays.
+            // For mono, samples are two bytes each. For stereo, it is four bytes, first two left, then two right.
+            for (int i = 0; i < samplesPerChannel; ++i)
+            {
+                for (short j = 0; j < numChannels; ++j)
                 {
-                    rightChannel[rightChannelIndex++] = ByteConverter.ToInt16(data, byteIndex);
-                    byteIndex += 2;
+                    channels[j][i] = ByteConverter.ToInt16(data, DATA_INDEX + (i * 2 * numChannels) + (j * numChannels));
                 }
             }
         }
 
-        public short[] GetLeftChannel()
+        public short[][] GetChannels()
         {
-            return leftChannel;
+            return channels;
         }
 
-        public short[] GetRightChannel()
+        public bool IsMono()
         {
-            return rightChannel;
+            return channels.Length == 1;
         }
+
+        public short[][] ExtractSamples(int start, int end)
+        {
+            // Holds the extracted samples for each channel.
+            short[][] extractedSamples = new short[numChannels][];
+            
+            for (int i = 0; i < numChannels; ++i)
+            {
+                // Extract the samples for this channel in this array.
+                extractedSamples[i] = new short[end - start + 1];
+
+                // Holds the remaining samples in the channel, after the specified samples are extracted.
+                short[] newChannel = new short[channels[i].Length - end - start + 1];
+                
+                // Put the first half of the unextracted samples from the original channel to the new channel.
+                for (int j = 0; j < start; ++j)
+                {
+                    newChannel[j] = channels[i][j];
+                }
+
+                // Extracted the samples from the original channel to the new array.
+                for (int j = 0; j < extractedSamples.Length; ++j)
+                {
+                    extractedSamples[i][j] = channels[i][start + j];
+                }
+
+                // Put the second half of the unextracted samples from the original channel to the new channel.
+                for (int j = start; j < newChannel.Length; ++j)
+                {
+                    newChannel[j] = channels[i][end + 1 + j];
+                }
+
+                channels[i] = newChannel;
+            }
+
+            return extractedSamples;
+        }
+
+
     }
 }
