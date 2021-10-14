@@ -168,22 +168,9 @@ namespace WaveAnalyzer
             }
         }
 
-        public unsafe byte* GetMonoData()
+        public int GetDataLength()
         {
-            byte[] data = new byte[subchunk2Size];
-            int byteIndex = 0, leftChannelIndex = 0, rightChannelIndex = 0;
-            while (byteIndex < subchunk2Size)
-            {
-                data[byteIndex] = (byte) leftChannel[leftChannelIndex++];
-                byteIndex += 2;
-
-                if (rightChannel != null)
-                {
-                    data[byteIndex] = (byte) rightChannel[rightChannelIndex++];
-                    byteIndex += 2;
-                }
-            }
-            return data;
+            return subchunk2Size;
         }
     }
 }

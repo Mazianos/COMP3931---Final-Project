@@ -40,7 +40,7 @@ namespace WaveAnalyzer
         public static extern uint GetDWDataLength();
 
         [DllImport("RecordPlayLibrary.dll")]
-        public static extern unsafe void SetSaveBuffer(byte[] saveBuffer);
+        public static extern unsafe void SetSaveBuffer(byte* saveBuffer);
 
         [DllImport("RecordPlayLibrary.dll")]
         public static extern void SetDWDataLength(uint dataWord);
@@ -106,7 +106,7 @@ namespace WaveAnalyzer
             hwnd = source.Handle;
         }
 
-        public void OpenHandler(object sender, RoutedEventArgs e)
+        public unsafe void OpenHandler(object sender, RoutedEventArgs e)
         {
             // Opens the open file dialog box.
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -120,12 +120,18 @@ namespace WaveAnalyzer
             }
 
             // Read the wave file in bytes.
+            // God this is ugly af.
             wave = new Wave(openFileDialog.FileName);
             short[] channel = wave.GetChannels()[0];
-            byte[] data = new byte[channel.Length];
-            Buffer.BlockCopy(channel, 0, data, 0, channel.Length);
-            SetSaveBuffer(data);
-
+            byte[] dataArr = new byte[channel.Length];
+            Buffer.BlockCopy(channel, 0, dataArr, 0, channel.Length);
+            byte* Pdata;
+            fixed (byte* data = dataArr)
+            {
+                Pdata = data;
+            }
+            SetSaveBuffer(Pdata);
+            SetDWDataLength((uint) wave.GetDataLength());
 
             Trace.WriteLine("Done!");
 
