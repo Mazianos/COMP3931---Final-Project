@@ -52,6 +52,7 @@ namespace WaveAnalyzer
             leftChannel = numChannels != 1 ? new short[subchunk2Size / 2] : new short[subchunk2Size];
             // rightChannel (stereo) will only be needed if the number of channels is not 1 (mono).
             rightChannel = numChannels != 1 ? new short[subchunk2Size / 2] : null;
+            // monoChannel 
 
             // Start at the data index to get the samples.
             int byteIndex = DATA_INDEX;
@@ -63,11 +64,13 @@ namespace WaveAnalyzer
 
             while (byteIndex < subchunk2Size)
             {
+                monoChannel[leftChannelIndex] = ByteConverter.ToInt16(data, byteIndex);
                 leftChannel[leftChannelIndex++] = ByteConverter.ToInt16(data, byteIndex);
                 byteIndex += 2;
 
                 if (rightChannel != null)
                 {
+                    monoChannel[leftChannelIndex] = ByteConverter.ToInt16(data, byteIndex);
                     rightChannel[rightChannelIndex++] = ByteConverter.ToInt16(data, byteIndex);
                     byteIndex += 2;
                 }
@@ -82,6 +85,24 @@ namespace WaveAnalyzer
         public short[] GetRightChannel()
         {
             return rightChannel;
+        }
+
+        public unsafe byte* GetMonoData()
+        {
+            byte[] data = new byte[subchunk2Size];
+            int byteIndex = 0, leftChannelIndex = 0, rightChannelIndex = 0;
+            while (byteIndex < subchunk2Size)
+            {
+                data[byteIndex] = (byte) leftChannel[leftChannelIndex++];
+                byteIndex += 2;
+
+                if (rightChannel != null)
+                {
+                    data[byteIndex] = (byte) rightChannel[rightChannelIndex++];
+                    byteIndex += 2;
+                }
+            }
+            return data;
         }
     }
 }
