@@ -40,7 +40,7 @@ namespace WaveAnalyzer
         public static extern uint GetDWDataLength();
 
         [DllImport("RecordPlayLibrary.dll")]
-        public static extern unsafe void SetSaveBuffer(byte* saveBuffer);
+        public static extern unsafe void SetSaveBuffer(byte[] saveBuffer);
 
         [DllImport("RecordPlayLibrary.dll")]
         public static extern void SetDWDataLength(uint dataWord);
@@ -121,7 +121,10 @@ namespace WaveAnalyzer
 
             // Read the wave file in bytes.
             wave = new Wave(openFileDialog.FileName);
-            SetSaveBuffer(wave.data)
+            short[] channel = wave.GetChannels()[0];
+            byte[] data = new byte[channel.Length];
+            Buffer.BlockCopy(channel, 0, data, 0, channel.Length);
+            SetSaveBuffer(data);
 
 
             Trace.WriteLine("Done!");
@@ -136,21 +139,50 @@ namespace WaveAnalyzer
 
         }
 
-        private void PlayPauseHandler(object sender, RoutedEventArgs e)
+        /**
+         * Play/Pause Wave
+         */
+        public void PlayPauseHandler(object sender, RoutedEventArgs e)
         {
-            PlayPauseIcon.Source = isPlaying ? (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"))
-                : (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\pause.png"));
-            isPlaying = !isPlaying;
+            if (!bPlaying)
+            {
+                PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\pause.png"));
+                //0x0111 is the code for WM_COMMAND
+                //1002 is the code for IDC_PLAY_BEG
+                SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1002)) & 0xffff)), (IntPtr)null);
+                bPlaying = true;
+            }
+            else
+            {
+                PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"));
+                //0x0111 is the code for WM_COMMAND
+                //1003 is the code for IDC_PLAY_PAUSE
+                SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1003)) & 0xffff)), (IntPtr)null);
+                bPlaying = false;
+            }
         }
 
-        private void StopHandler(object sender, RoutedEventArgs e)
+        /**
+         * Stops Playing Wave
+         */
+        public void StopHandler(object sender, RoutedEventArgs e)
         {
-
+            //0x0111 is the code for WM_COMMAND
+            //1004 is the code for IDC_PLAY_END
+            SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1001)) & 0xffff)), (IntPtr)null);
         }
 
-        private void RecordHandler(object sender, RoutedEventArgs e)
+        /**
+         * Start Recording
+         */
+        public void RecordHandler(object sender, RoutedEventArgs e)
         {
 
+            currentSelection.DrawSelector(ref LeftChannelCanvas);
+            if (!wave.IsMono())
+            {
+                currentSelection.DrawSelector(ref RightChannelCanvas);
+            }
         }
 
         private void WaveScrollHandler(object sender, ScrollChangedEventArgs e)
@@ -194,11 +226,7 @@ namespace WaveAnalyzer
         }
 
         private void UpdateSelection(int xPosition)
-        /**
-         * Start Recording
-         */
-        public void RecordHandler(object sender, RoutedEventArgs e)
-        {
+        { 
             // Return if no wave is found or if there is no current selection.
             if (wave == null || currentSelection == null)
             {
@@ -231,14 +259,7 @@ namespace WaveAnalyzer
             }
             
         }
-
-            currentSelection.DrawSelector(ref LeftChannelCanvas);
-            if (!wave.IsMono())
-            {
-                currentSelection.DrawSelector(ref RightChannelCanvas);
-            }
-        }
-
+        
         private void CutDeleteHandler(object sender, RoutedEventArgs e)
         {
             short[][] temp = wave.ExtractSamples(currentSelection.StartX, currentSelection.CurrentX);
@@ -264,39 +285,6 @@ namespace WaveAnalyzer
 
             ClearCanvases();
             RedrawWaves();
-        }
-    }
-        /**
-         * Stops Playing Wave
-         */
-        public void StopHandler(object sender, RoutedEventArgs e)
-        {
-            //0x0111 is the code for WM_COMMAND
-            //1004 is the code for IDC_PLAY_END
-            SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1001)) & 0xffff)), (IntPtr)null);
-        }
-
-        /**
-         * Play/Pause Wave
-         */
-        public void PlayPauseHandler(object sender, RoutedEventArgs e)
-        {
-            if (!bPlaying)
-            {
-                PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\pause.png"));
-                //0x0111 is the code for WM_COMMAND
-                //1002 is the code for IDC_PLAY_BEG
-                SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1002)) & 0xffff)), (IntPtr)null);
-                bPlaying = true;
-            }
-            else
-            {
-                PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"));
-                //0x0111 is the code for WM_COMMAND
-                //1003 is the code for IDC_PLAY_PAUSE
-                SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1003)) & 0xffff)), (IntPtr)null);
-                bPlaying = false;
-            }
         }
     }
 }
