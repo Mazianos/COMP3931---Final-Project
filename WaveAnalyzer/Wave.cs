@@ -76,18 +76,35 @@ namespace WaveAnalyzer
             return channels.Length == 1;
         }
 
-        public short[][] ExtractSamples(int start, int end)
+        public short[][] ExtractSamples(int firstIndex, int secondIndex)
         {
+            int start = firstIndex < secondIndex ? firstIndex : secondIndex;
+            int end = firstIndex < secondIndex ? secondIndex : firstIndex;
+
+            if (channels[0].Length == 0)
+            {
+                return new short[0][];
+            }
+            if (start < 0)
+            {
+                start = 0;
+            }
+            if (end > channels[0].Length - 1)
+            {
+                end = channels[0].Length - 1;
+            }
+
             // Holds the extracted samples for each channel.
             short[][] extractedSamples = new short[numChannels][];
             
             for (int i = 0; i < numChannels; ++i)
             {
+                int extractedSamplesLength = end - start + 1;
                 // Extract the samples for this channel in this array.
-                extractedSamples[i] = new short[end - start + 1];
+                extractedSamples[i] = new short[extractedSamplesLength];
 
                 // Holds the remaining samples in the channel, after the specified samples are extracted.
-                short[] newChannel = new short[channels[i].Length - end - start + 1];
+                short[] newChannel = new short[channels[i].Length - extractedSamplesLength];
                 
                 // Put the first half of the unextracted samples from the original channel to the new channel.
                 for (int j = 0; j < start; ++j)
@@ -96,7 +113,7 @@ namespace WaveAnalyzer
                 }
 
                 // Extracted the samples from the original channel to the new array.
-                for (int j = 0; j < extractedSamples.Length; ++j)
+                for (int j = 0; j < extractedSamplesLength; ++j)
                 {
                     extractedSamples[i][j] = channels[i][start + j];
                 }
@@ -104,7 +121,7 @@ namespace WaveAnalyzer
                 // Put the second half of the unextracted samples from the original channel to the new channel.
                 for (int j = start; j < newChannel.Length; ++j)
                 {
-                    newChannel[j] = channels[i][end + 1 + j];
+                    newChannel[j] = channels[i][extractedSamplesLength + j];
                 }
 
                 channels[i] = newChannel;
@@ -113,6 +130,42 @@ namespace WaveAnalyzer
             return extractedSamples;
         }
 
+        public void InsertSamples(short[][] samples, int position)
+        {
+            if (samples == null)
+            {
+                return;
+            }
+            if (position > channels[0].Length - 1)
+            {
+                position = channels[0].Length - 1;
+            }
+            if (position < 0)
+            {
+                position = 0;
+            }
 
+            for (int i = 0; i < numChannels; ++i)
+            {
+                short[] newChannel = new short[channels[i].Length + samples[i].Length];
+
+                for (int j = 0; j < position; ++j)
+                {
+                    newChannel[j] = channels[i][j];
+                }
+
+                for (int j = 0; j < samples[i].Length; ++j)
+                {
+                    newChannel[j + position] = samples[i][j];
+                }
+
+                for (int j = position; j < channels[i].Length; ++j)
+                {
+                    newChannel[j + samples[i].Length] = channels[i][j];
+                }
+
+                channels[i] = newChannel;
+            }
+        }
     }
 }

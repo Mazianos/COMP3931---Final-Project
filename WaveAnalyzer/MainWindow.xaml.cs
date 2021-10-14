@@ -34,11 +34,18 @@ namespace WaveAnalyzer
             B = 96,
             A = 255
         };
-        private Color selectorColor = new Color()
+        private Color selectionColor = new Color()
         {
             R = 96,
             G = 175,
             B = 248,
+            A = 255
+        };
+        private Color selectorColor = new Color()
+        {
+            R = 255,
+            G = 100,
+            B = 100,
             A = 255
         };
 
@@ -130,9 +137,8 @@ namespace WaveAnalyzer
         private void WaveMouseDownHandler(object sender, MouseButtonEventArgs e)
         {
             // Select a portion of the wave from the current mouse position.
-            currentSelection = new WaveSelector(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset, selectorColor);
-
-            UpdateSelection(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset);
+            currentSelection = new WaveSelector((int)(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset), selectionColor, selectorColor);
+            UpdateSelection(currentSelection.StartX);
         }
 
         private void WaveMouseMoveHandler(object sender, MouseEventArgs e)
@@ -140,11 +146,11 @@ namespace WaveAnalyzer
             // Update the selection if the mouse is held down.
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                UpdateSelection(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset);
+                UpdateSelection((int)(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset));
             }
         }
 
-        private void UpdateSelection(double xPosition)
+        private void UpdateSelection(int xPosition)
         {
             // Return if no wave is found or if there is no current selection.
             if (wave == null || currentSelection == null)
@@ -163,33 +169,39 @@ namespace WaveAnalyzer
 
             // Redraw the waves on top of the created selection rectangles.
             RedrawWaves();
+
+            currentSelection.DrawSelector(ref LeftChannelCanvas);
+            if (!wave.IsMono())
+            {
+                currentSelection.DrawSelector(ref RightChannelCanvas);
+            }
         }
 
         private void CutDeleteHandler(object sender, RoutedEventArgs e)
         {
-            short[][] temp;
-
-            if (currentSelection.GetCurrentX() - currentSelection.GetStartX() < 0)
-            {
-                temp = wave.ExtractSamples((int)currentSelection.GetCurrentX(), (int)currentSelection.GetStartX());
-            }
-            else
-            {
-                temp = wave.ExtractSamples((int)currentSelection.GetStartX(), (int)currentSelection.GetCurrentX());
-            }
-
-            if (e.Equals(CutButton))
+            short[][] temp = wave.ExtractSamples(currentSelection.StartX, currentSelection.CurrentX);
+            
+            if (e.Source.Equals(CutButton))
             {
                 cutSamples = temp;
             }
 
-            ClearCanvases();
-            RedrawWaves();
+            int previousCurrentX = currentSelection.CurrentX;
+            currentSelection = new WaveSelector(previousCurrentX, selectionColor, selectorColor);
+            UpdateSelection(currentSelection.StartX);
+            // WHY AREN'T YOU DRAWING THE DAMN LINE??
+            /*foreach(var x in LeftChannelCanvas.Children)
+            {
+                Trace.WriteLine(x);
+            }*/
         }
 
         private void PasteHandler(object sender, RoutedEventArgs e)
         {
-            // TODO
+            wave.InsertSamples(cutSamples, currentSelection.CurrentX);
+
+            ClearCanvases();
+            RedrawWaves();
         }
     }
 }

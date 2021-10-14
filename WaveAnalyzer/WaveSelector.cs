@@ -11,37 +11,44 @@ namespace WaveAnalyzer
 {
     class WaveSelector
     {
-        private double startX;
-        private double currentX;
-        private SolidColorBrush selectionBrush;
+        public int StartX { get; private set; }
 
-        public WaveSelector(double startX, Color selectionColor)
+        public int CurrentX { get; private set; }
+
+        private SolidColorBrush selectionBrush;
+        private SolidColorBrush selectorBrush;
+
+        public WaveSelector(int startX, Color selectionColor, Color selectorColor)
         {
-            this.startX = startX;
+            StartX = startX;
             selectionBrush = new SolidColorBrush
             {
                 Color = selectionColor
             };
+            selectorBrush = new SolidColorBrush
+            {
+                Color = selectorColor
+            };
         }
 
-        public void UpdateSelection(double currentX, ref Canvas canvas)
+        public void UpdateSelection(int currentX, ref Canvas canvas)
         {
-            this.currentX = currentX;
+            CurrentX = currentX;
             RedrawSelection(ref canvas);
         }
 
         public void RedrawSelection(ref Canvas canvas)
         {
-            double selectionDifference = currentX - startX;
+            double selectionDifference = CurrentX - StartX;
 
             Thickness rectangleMargin = new Thickness()
             {
-                Left = selectionDifference >= 0 ? startX : currentX,
+                Left = selectionDifference >= 0 ? StartX : CurrentX,
             };
 
             Rectangle selection = new Rectangle()
             {
-                Height = 175,
+                Height = 150,
                 Width = Math.Abs(selectionDifference),
                 Fill = selectionBrush,
                 Margin = rectangleMargin
@@ -50,14 +57,19 @@ namespace WaveAnalyzer
             canvas.Children.Add(selection);
         }
 
-        public double GetStartX()
+        public void DrawSelector(ref Canvas canvas)
         {
-            return startX;
-        }
+            Line selector = new Line()
+            {
+                X1 = CurrentX,
+                X2 = CurrentX,
+                Y1 = -25,
+                Y2 = 175,
+                StrokeThickness = 2,
+                Stroke = selectorBrush
+            };
 
-        public double GetCurrentX()
-        {
-            return currentX;
+            canvas.Children.Add(selector);
         }
     }
 }
