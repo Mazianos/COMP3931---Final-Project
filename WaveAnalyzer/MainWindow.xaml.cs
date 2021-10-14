@@ -56,10 +56,38 @@ namespace WaveAnalyzer
             }
             return (IntPtr) 1;
         }
+        private bool isPlaying;
+        private WaveSelector currentSelection;
+        private short[][] cutSamples;
+
+        private Color waveColor = new Color()
+        {
+            R = 248,
+            G = 175,
+            B = 96,
+            A = 255
+        };
+        private Color selectionColor = new Color()
+        {
+            R = 96,
+            G = 175,
+            B = 248,
+            A = 255
+        };
+        private Color selectorColor = new Color()
+        {
+            R = 255,
+            G = 100,
+            B = 100,
+            A = 255
+        };
 
         public MainWindow()
         {
             InitializeComponent();
+
+            waveDrawer = new WaveDrawer(waveColor);
+            cutSamples = null;
 
             // Set icon images.
             converter = new ImageSourceConverter();
@@ -99,23 +127,8 @@ namespace WaveAnalyzer
             Trace.WriteLine("Done!");
 
             // Drawing.
-            Color waveColor = new Color()
-            {
-                R = 248,
-                G = 175,
-                B = 96,
-                A = 255
-            };
-
-            waveDrawer = new WaveDrawer(waveColor);
-
-            waveDrawer.DrawWave(wave.GetLeftChannel(), ref LeftChannelCanvas, 0, root.Width);
-            if (wave.GetRightChannel() != null)
-            {
-                waveDrawer.DrawWave(wave.GetRightChannel(), ref RightChannelCanvas, 0, root.Width);
-            }
-
-            
+            ClearCanvases();
+            RedrawWaves();
         }
 
         private void SaveHandler(object sender, RoutedEventArgs e)
@@ -123,27 +136,86 @@ namespace WaveAnalyzer
 
         }
 
-        private void LeftChannelScrollHandler(object sender, ScrollChangedEventArgs e)
+        private void PlayPauseHandler(object sender, RoutedEventArgs e)
+        {
+            PlayPauseIcon.Source = isPlaying ? (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"))
+                : (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\pause.png"));
+            isPlaying = !isPlaying;
+        }
+
+        private void StopHandler(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void RecordHandler(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void WaveScrollHandler(object sender, ScrollChangedEventArgs e)
+        {
+            ClearCanvases();
+            RedrawWaves();
+        }
+
+        private void ClearCanvases()
+        {
+            LeftChannelCanvas.Children.Clear();
+            RightChannelCanvas.Children.Clear();
+        }
+
+        private void RedrawWaves()
         {
             if (wave != null)
             {
-                waveDrawer.DrawWave(wave.GetLeftChannel(), ref LeftChannelCanvas, e.HorizontalOffset, root.Width);
+                waveDrawer.DrawWave(wave.GetChannels()[0], ref LeftChannelCanvas, WaveScroll.HorizontalOffset, SystemParameters.PrimaryScreenWidth);
+                if (!wave.IsMono())
+                {
+                    waveDrawer.DrawWave(wave.GetChannels()[1], ref RightChannelCanvas, WaveScroll.HorizontalOffset, SystemParameters.PrimaryScreenWidth);
+                }
             }
         }
 
-        private void RightChannelScrollHandler(object sender, ScrollChangedEventArgs e)
+        private void WaveMouseDownHandler(object sender, MouseButtonEventArgs e)
         {
-            if (wave != null && wave.GetRightChannel() != null)
+            // Select a portion of the wave from the current mouse position.
+            currentSelection = new WaveSelector((int)(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset), selectionColor, selectorColor);
+            UpdateSelection(currentSelection.StartX);
+        }
+
+        private void WaveMouseMoveHandler(object sender, MouseEventArgs e)
+        {
+            // Update the selection if the mouse is held down.
+            if (e.LeftButton == MouseButtonState.Pressed)
             {
-                waveDrawer.DrawWave(wave.GetRightChannel(), ref RightChannelCanvas, e.HorizontalOffset, root.Width);
+                UpdateSelection((int)(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset));
             }
         }
 
+        private void UpdateSelection(int xPosition)
         /**
          * Start Recording
          */
         public void RecordHandler(object sender, RoutedEventArgs e)
         {
+            // Return if no wave is found or if there is no current selection.
+            if (wave == null || currentSelection == null)
+            {
+                return;
+            }
+
+            ClearCanvases();
+
+            // Update the selection by giving it the current x position of the mouse and the relevant canvases.
+            currentSelection.UpdateSelection(xPosition, ref LeftChannelCanvas);
+            if (!wave.IsMono())
+            {
+                currentSelection.UpdateSelection(xPosition, ref RightChannelCanvas);
+            }
+
+            // Redraw the waves on top of the created selection rectangles.
+            RedrawWaves();
             if (!bRecording)
             { 
                 //0x0111 is the code for WM_COMMAND
@@ -160,6 +232,40 @@ namespace WaveAnalyzer
             
         }
 
+            currentSelection.DrawSelector(ref LeftChannelCanvas);
+            if (!wave.IsMono())
+            {
+                currentSelection.DrawSelector(ref RightChannelCanvas);
+            }
+        }
+
+        private void CutDeleteHandler(object sender, RoutedEventArgs e)
+        {
+            short[][] temp = wave.ExtractSamples(currentSelection.StartX, currentSelection.CurrentX);
+            
+            if (e.Source.Equals(CutButton))
+            {
+                cutSamples = temp;
+            }
+
+            int previousCurrentX = currentSelection.CurrentX;
+            currentSelection = new WaveSelector(previousCurrentX, selectionColor, selectorColor);
+            UpdateSelection(currentSelection.StartX);
+            // WHY AREN'T YOU DRAWING THE DAMN LINE??
+            /*foreach(var x in LeftChannelCanvas.Children)
+            {
+                Trace.WriteLine(x);
+            }*/
+        }
+
+        private void PasteHandler(object sender, RoutedEventArgs e)
+        {
+            wave.InsertSamples(cutSamples, currentSelection.CurrentX);
+
+            ClearCanvases();
+            RedrawWaves();
+        }
+    }
         /**
          * Stops Playing Wave
          */

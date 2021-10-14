@@ -10,13 +10,10 @@ namespace WaveAnalyzer
 {
     class WaveDrawer
     {
-        private Color waveColor;
         private SolidColorBrush waveBrush;
 
         public WaveDrawer(Color waveColor)
         {
-            this.waveColor = waveColor;
-
             waveBrush = new SolidColorBrush
             {
                 Color = waveColor
@@ -26,6 +23,7 @@ namespace WaveAnalyzer
         public void DrawWave(short[] samples, ref Canvas canvas, double offset, double windowWidth)
         {
             PointCollection wavePoints = new PointCollection();
+
             Polyline wavePolyline = new Polyline()
             {
                 Points = wavePoints,
@@ -33,12 +31,14 @@ namespace WaveAnalyzer
                 StrokeThickness = 1
             };
             
+            // Used for clamping the value of each sample to between 0 and 1.
             int min = GetMinSample(samples);
             float denom = GetMaxSample(samples) - min;
             if (denom == 0)
             {
                 ++denom;
             }
+
             for (int i = (int)offset; i < samples.Length && i < windowWidth + offset; ++i)
             {
                 Point point = new Point()
@@ -49,10 +49,10 @@ namespace WaveAnalyzer
 
                 wavePoints.Add(point);
             }
-            canvas.Children.Clear();
+
             canvas.Children.Add(wavePolyline);
-            // Width is half the sample array length because there are 2 bytes in 1 sample.
-            canvas.Width = samples.Length / 2;
+
+            canvas.Width = samples.Length;
         }
 
         private short GetMinSample(short[] samples)
