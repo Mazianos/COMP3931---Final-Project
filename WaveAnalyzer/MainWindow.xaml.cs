@@ -30,33 +30,35 @@ namespace WaveAnalyzer
         bool bRecording, bPlaying;
         IntPtr hwnd;
 
-        [DllImport("RecordPlayLibrary.dll")]
+        [DllImport("SoundProcessing.dll")]
         public static extern bool WinProc(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("RecordPlayLibrary.dll")]
-        public static extern unsafe byte* GetSaveBuffer();
+        [DllImport("SoundProcessing.dll")]
+        public static extern IntPtr GetSaveBuffer();
 
-        [DllImport("RecordPlayLibrary.dll")]
+        [DllImport("SoundProcessing.dll")]
         public static extern uint GetDWDataLength();
 
-        [DllImport("RecordPlayLibrary.dll")]
+        [DllImport("SoundProcessing.dll")]
         public static extern unsafe void SetSaveBuffer(byte* saveBuffer);
 
-        [DllImport("RecordPlayLibrary.dll")]
+        [DllImport("SoundProcessing.dll")]
         public static extern void SetDWDataLength(uint dataWord);
+
+        [DllImport("SoundProcessing.dll")]
+        public static extern void InitWave();
+
+        [DllImport("SoundProcessing.dll")]
+        public static extern void BeginRecord();
+
+        [DllImport("SoundProcessing.dll")]
+        public static extern void EndRecord();
 
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int wMsg, IntPtr wParam, IntPtr lParam);
 
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            if(WinProc(hwnd, msg, wParam, lParam))
-            {
-                return IntPtr.Zero;
-            }
-            return (IntPtr) 1;
-        }
         private bool isPlaying;
+        private bool isRecording = false;
         private WaveSelector currentSelection;
         private short[][] cutSamples;
 
@@ -96,6 +98,16 @@ namespace WaveAnalyzer
             PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"));
             StopIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\stop.png"));
             RecordIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\record.png"));
+            InitWave();
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (WinProc(hwnd, msg, wParam, lParam))
+            {
+                return IntPtr.Zero;
+            }
+            return (IntPtr)1;
         }
 
         protected void OnInitialized(EventArgs e)
@@ -183,7 +195,14 @@ namespace WaveAnalyzer
          */
         public void RecordHandler(object sender, RoutedEventArgs e)
         {
-
+            if (!isRecording)
+            {
+                BeginRecord();
+                isRecording = true;
+            } else
+            {
+                EndRecord();
+            }
             currentSelection.DrawSelector(ref LeftChannelCanvas);
             if (!wave.IsMono())
             {
