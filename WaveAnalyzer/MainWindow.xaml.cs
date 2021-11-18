@@ -54,6 +54,15 @@ namespace WaveAnalyzer
         [DllImport("SoundProcessing.dll")]
         public static extern void EndRecord();
 
+        [DllImport("SoundProcessing.dll")]
+        public static extern void BeginPlay();
+
+        [DllImport("SoundProcessing.dll")]
+        public static extern void PausePlay();
+
+        [DllImport("SoundProcessing.dll")]
+        public static extern void EndPlay();
+
         [DllImport("user32.dll")]
         public static extern int SendMessage(IntPtr hWnd, int wMsg, IntPtr wParam, IntPtr lParam);
 
@@ -165,17 +174,13 @@ namespace WaveAnalyzer
             if (!bPlaying)
             {
                 PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\pause.png"));
-                //0x0111 is the code for WM_COMMAND
-                //1002 is the code for IDC_PLAY_BEG
-                SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1002)) & 0xffff)), (IntPtr)null);
+                BeginPlay();
                 bPlaying = true;
             }
             else
             {
                 PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"));
-                //0x0111 is the code for WM_COMMAND
-                //1003 is the code for IDC_PLAY_PAUSE
-                SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1003)) & 0xffff)), (IntPtr)null);
+                PausePlay();
                 bPlaying = false;
             }
         }
@@ -185,9 +190,7 @@ namespace WaveAnalyzer
          */
         public void StopHandler(object sender, RoutedEventArgs e)
         {
-            //0x0111 is the code for WM_COMMAND
-            //1004 is the code for IDC_PLAY_END
-            SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1001)) & 0xffff)), (IntPtr)null);
+            EndPlay();
         }
 
         /**

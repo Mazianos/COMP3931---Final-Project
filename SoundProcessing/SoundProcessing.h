@@ -22,3 +22,9 @@ extern SOUND_PROCESSING_API void InitWave();
 extern SOUND_PROCESSING_API void BeginRecord();
 
 extern SOUND_PROCESSING_API void EndRecord();
+
+extern SOUND_PROCESSING_API void PausePlay();
+
+extern SOUND_PROCESSING_API void BeginPlay();
+
+extern SOUND_PROCESSING_API void EndPlay();

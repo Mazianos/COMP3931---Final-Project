@@ -157,63 +157,65 @@ SOUND_PROCESSING_API void EndRecord() {
     waveInReset(hWaveIn);
 }
 
+SOUND_PROCESSING_API void BeginPlay() {
+    // Open waveform audio for output
+
+    waveform.wFormatTag = WAVE_FORMAT_PCM;
+    waveform.nChannels = 1;
+    waveform.nSamplesPerSec = 11025;
+    waveform.nAvgBytesPerSec = 11025;
+    waveform.nBlockAlign = 1;
+    waveform.wBitsPerSample = 8;
+    waveform.cbSize = 0;
+
+    if (waveOutOpen(&hWaveOut, WAVE_MAPPER, &waveform,
+        (DWORD)hInstance, 0, CALLBACK_WINDOW))
+    {
+        MessageBeep(MB_ICONEXCLAMATION);
+        MessageBox(hInstance, szOpenError, szAppName,
+            MB_ICONEXCLAMATION | MB_OK);
+    }
+}
+
+SOUND_PROCESSING_API void PausePlay() {
+    // Pause or restart output
+
+    if (!bPaused)
+    {
+        waveOutPause(hWaveOut);
+        SetDlgItemText(hInstance, IDC_PLAY_PAUSE, TEXT("Resume"));
+        bPaused = TRUE;
+    }
+    else
+    {
+        waveOutRestart(hWaveOut);
+        SetDlgItemText(hInstance, IDC_PLAY_PAUSE, TEXT("Pause"));
+        bPaused = FALSE;
+    }
+}
+
+SOUND_PROCESSING_API void EndPlay() {
+    // Reset output for close preparation
+
+    bEnding = TRUE;
+    waveOutReset(hWaveOut);
+}
+
 SOUND_PROCESSING_API BOOL WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
-
     switch (message)
     {
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
-        case IDC_RECORD_BEG:
-            return TRUE;
-
-        case IDC_RECORD_END:
-            return TRUE;
-
         case IDC_PLAY_BEG:
-            // Open waveform audio for output
-
-            waveform.wFormatTag = WAVE_FORMAT_PCM;
-            waveform.nChannels = 1;
-            waveform.nSamplesPerSec = 11025;
-            waveform.nAvgBytesPerSec = 11025;
-            waveform.nBlockAlign = 1;
-            waveform.wBitsPerSample = 8;
-            waveform.cbSize = 0;
-
-            if (waveOutOpen(&hWaveOut, WAVE_MAPPER, &waveform,
-                (DWORD)hwnd, 0, CALLBACK_WINDOW))
-            {
-                MessageBeep(MB_ICONEXCLAMATION);
-                MessageBox(hwnd, szOpenError, szAppName,
-                    MB_ICONEXCLAMATION | MB_OK);
-            }
-            return TRUE;
+            
 
         case IDC_PLAY_PAUSE:
-            // Pause or restart output
-
-            if (!bPaused)
-            {
-                waveOutPause(hWaveOut);
-                SetDlgItemText(hwnd, IDC_PLAY_PAUSE, TEXT("Resume"));
-                bPaused = TRUE;
-            }
-            else
-            {
-                waveOutRestart(hWaveOut);
-                SetDlgItemText(hwnd, IDC_PLAY_PAUSE, TEXT("Pause"));
-                bPaused = FALSE;
-            }
+            
             return TRUE;
 
         case IDC_PLAY_END:
-            // Reset output for close preparation
-
-            bEnding = TRUE;
-            waveOutReset(hWaveOut);
             return TRUE;
 
         case IDC_PLAY_REV:
