@@ -121,10 +121,9 @@ namespace WaveAnalyzer
 
         protected void OnInitialized(EventArgs e)
         {
-            Window window = Application.Current.MainWindow;
-            HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(window).Handle);
-            source.AddHook(WndProc);
-            hwnd = source.Handle;
+            Window window = Window.GetWindow(this);
+            var wih = new WindowInteropHelper(window);
+            hwnd = wih.Handle;
         }
 
         public unsafe void OpenHandler(object sender, RoutedEventArgs e)
@@ -205,11 +204,7 @@ namespace WaveAnalyzer
             } else
             {
                 EndRecord();
-            }
-            currentSelection.DrawSelector(ref LeftChannelCanvas);
-            if (!wave.IsMono())
-            {
-                currentSelection.DrawSelector(ref RightChannelCanvas);
+                isRecording = false;
             }
         }
 

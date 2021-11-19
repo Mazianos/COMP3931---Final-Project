@@ -3,7 +3,6 @@
 #define SOUND_PROCESSING_API __declspec(dllexport)
 
 #include <Windows.h>
-#include "mmeapi.h"
 
 extern SOUND_PROCESSING_API PBYTE GetSaveBuffer();
 

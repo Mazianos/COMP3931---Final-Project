@@ -5,6 +5,8 @@
 #include "pch.h"
 #include "framework.h"
 #include "SoundProcessing.h"
+#include <stdlib.h>
+#include "mmeapi.h"
 
 #define IDC_RECORD_BEG                  1000
 #define IDC_RECORD_END                  1001
@@ -101,9 +103,7 @@ SOUND_PROCESSING_API void BeginRecord() {
         if (pBuffer2) free(pBuffer2);
 
         MessageBeep(MB_ICONEXCLAMATION);
-        MessageBox(hInstance, szMemError, szAppName,
-            MB_ICONEXCLAMATION | MB_OK);
-        return TRUE;
+        return 12;
     }
 
     // Open waveform audio for input
@@ -117,13 +117,12 @@ SOUND_PROCESSING_API void BeginRecord() {
     waveform.cbSize = 0;
 
     if (waveInOpen(&hWaveIn, WAVE_MAPPER, &waveform,
-        (DWORD)hInstance, 0, CALLBACK_WINDOW))
+        (DWORD)&WinProc, 0, CALLBACK_FUNCTION));
     {
         free(pBuffer1);
         free(pBuffer2);
         MessageBeep(MB_ICONEXCLAMATION);
-        MessageBox(hInstance, szOpenError, szAppName,
-            MB_ICONEXCLAMATION | MB_OK);
+
     }
     // Set up headers and prepare them
 
@@ -169,11 +168,9 @@ SOUND_PROCESSING_API void BeginPlay() {
     waveform.cbSize = 0;
 
     if (waveOutOpen(&hWaveOut, WAVE_MAPPER, &waveform,
-        (DWORD)hInstance, 0, CALLBACK_WINDOW))
+        (DWORD)&WinProc, 0, CALLBACK_FUNCTION))
     {
         MessageBeep(MB_ICONEXCLAMATION);
-        MessageBox(hInstance, szOpenError, szAppName,
-            MB_ICONEXCLAMATION | MB_OK);
     }
 }
 
@@ -201,62 +198,11 @@ SOUND_PROCESSING_API void EndPlay() {
     waveOutReset(hWaveOut);
 }
 
-SOUND_PROCESSING_API BOOL WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+SOUND_PROCESSING_API BOOL WinProc(HWAVEIN hwi, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
-    switch (message)
+    switch (uMsg)
     {
-    case WM_COMMAND:
-        switch (LOWORD(wParam))
-        {
-        case IDC_PLAY_BEG:
-            
-
-        case IDC_PLAY_PAUSE:
-            
-            return TRUE;
-
-        case IDC_PLAY_END:
-            return TRUE;
-
-        case IDC_PLAY_REV:
-            // Reverse save buffer and play
-
-            bReverse = TRUE;
-            ReverseMemory(pSaveBuffer, dwDataLength);
-
-            SendMessage(hwnd, WM_COMMAND, IDC_PLAY_BEG, 0);
-            return TRUE;
-
-        case IDC_PLAY_REP:
-            // Set infinite repetitions and play
-
-            dwRepetitions = -1;
-            SendMessage(hwnd, WM_COMMAND, IDC_PLAY_BEG, 0);
-            return TRUE;
-
-        case IDC_PLAY_SPEED:
-            // Open waveform audio for fast output
-
-            waveform.wFormatTag = WAVE_FORMAT_PCM;
-            waveform.nChannels = 1;
-            waveform.nSamplesPerSec = 22050;
-            waveform.nAvgBytesPerSec = 22050;
-            waveform.nBlockAlign = 1;
-            waveform.wBitsPerSample = 8;
-            waveform.cbSize = 0;
-
-            if (waveOutOpen(&hWaveOut, 0, &waveform, (DWORD)hwnd, 0,
-                CALLBACK_WINDOW))
-            {
-                MessageBeep(MB_ICONEXCLAMATION);
-                MessageBox(hwnd, szOpenError, szAppName,
-                    MB_ICONEXCLAMATION | MB_OK);
-            }
-            return TRUE;
-        }
-        break;
-
-    case MM_WIM_OPEN:
+    case WIM_OPEN:
         // Shrink down the save buffer
 
         pSaveBuffer = realloc(pSaveBuffer, 1);
@@ -274,27 +220,25 @@ SOUND_PROCESSING_API BOOL WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
         waveInStart(hWaveIn);
         return TRUE;
 
-    case MM_WIM_DATA:
+    case WIM_DATA:
 
         // Reallocate save buffer memory
 
         pNewBuffer = realloc(pSaveBuffer, dwDataLength +
-            ((PWAVEHDR)lParam)->dwBytesRecorded);
+            ((PWAVEHDR)dwParam1)->dwBytesRecorded);
 
         if (pNewBuffer == NULL)
         {
             waveInClose(hWaveIn);
             MessageBeep(MB_ICONEXCLAMATION);
-            MessageBox(hwnd, szMemError, szAppName,
-                MB_ICONEXCLAMATION | MB_OK);
             return TRUE;
         }
 
         pSaveBuffer = pNewBuffer;
-        CopyMemory(pSaveBuffer + dwDataLength, ((PWAVEHDR)lParam)->lpData,
-            ((PWAVEHDR)lParam)->dwBytesRecorded);
+        CopyMemory(pSaveBuffer + dwDataLength, ((PWAVEHDR)dwParam1)->lpData,
+            ((PWAVEHDR)dwParam1)->dwBytesRecorded);
 
-        dwDataLength += ((PWAVEHDR)lParam)->dwBytesRecorded;
+        dwDataLength += ((PWAVEHDR)dwParam1)->dwBytesRecorded;
 
         if (bEnding)
         {
@@ -304,10 +248,10 @@ SOUND_PROCESSING_API BOOL WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
         // Send out a new buffer
 
-        waveInAddBuffer(hWaveIn, (PWAVEHDR)lParam, sizeof(WAVEHDR));
+        waveInAddBuffer(hWaveIn, (PWAVEHDR)dwParam1, sizeof(WAVEHDR));
         return TRUE;
 
-    case MM_WIM_CLOSE:
+    case WIM_CLOSE:
         // Free the buffer memory
 
         waveInUnprepareHeader(hWaveIn, pWaveHdr1, sizeof(WAVEHDR));
@@ -317,12 +261,32 @@ SOUND_PROCESSING_API BOOL WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
         free(pBuffer2);
         bRecording = FALSE;
 
-        if (bTerminating)
-            SendMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0L);
+        if (bTerminating) {
+            if (bRecording)
+            {
+                bTerminating = TRUE;
+                bEnding = TRUE;
+                waveInReset(hWaveIn);
+                return TRUE;
+            }
+
+            if (bPlaying)
+            {
+                bTerminating = TRUE;
+                bEnding = TRUE;
+                waveOutReset(hWaveOut);
+                return TRUE;
+            }
+
+            free(pWaveHdr1);
+            free(pWaveHdr2);
+            free(pSaveBuffer);
+            return TRUE;
+        }
 
         return TRUE;
 
-    case MM_WOM_OPEN:
+    case WOM_OPEN:
 
         // Set up header
 
@@ -344,12 +308,12 @@ SOUND_PROCESSING_API BOOL WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
         bPlaying = TRUE;
         return TRUE;
 
-    case MM_WOM_DONE:
+    case WOM_DONE:
         waveOutUnprepareHeader(hWaveOut, pWaveHdr1, sizeof(WAVEHDR));
         waveOutClose(hWaveOut);
         return TRUE;
 
-    case MM_WOM_CLOSE:
+    case WOM_CLOSE:
         bPaused = FALSE;
         dwRepetitions = 1;
         bPlaying = FALSE;
@@ -360,15 +324,7 @@ SOUND_PROCESSING_API BOOL WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
             bReverse = FALSE;
         }
 
-        if (bTerminating)
-            SendMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0L);
-
-        return TRUE;
-
-    case WM_SYSCOMMAND:
-        switch (LOWORD(wParam))
-        {
-        case SC_CLOSE:
+        if (bTerminating) {
             if (bRecording)
             {
                 bTerminating = TRUE;
@@ -388,10 +344,9 @@ SOUND_PROCESSING_API BOOL WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
             free(pWaveHdr1);
             free(pWaveHdr2);
             free(pSaveBuffer);
-            EndDialog(hwnd, 0);
-            return TRUE;
         }
-        break;
+
+        return TRUE;
     }
     return FALSE;
 }
