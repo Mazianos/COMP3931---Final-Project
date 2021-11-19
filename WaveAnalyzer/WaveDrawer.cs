@@ -12,11 +12,11 @@ namespace WaveAnalyzer
     {
         private SolidColorBrush waveBrush;
 
-        public WaveDrawer(Color waveColor)
+        public WaveDrawer()
         {
             waveBrush = new SolidColorBrush
             {
-                Color = waveColor
+                Color = AppColor.WaveColor
             };
         }
 

@@ -9,7 +9,7 @@ using System.Windows.Shapes;
 
 namespace WaveAnalyzer
 {
-    class WaveSelector
+    public class WaveSelector
     {
         public int StartX { get; private set; }
 
@@ -18,16 +18,16 @@ namespace WaveAnalyzer
         private SolidColorBrush selectionBrush;
         private SolidColorBrush selectorBrush;
 
-        public WaveSelector(int startX, Color selectionColor, Color selectorColor)
+        public WaveSelector(int startX)
         {
             StartX = startX;
             selectionBrush = new SolidColorBrush
             {
-                Color = selectionColor
+                Color = AppColor.SelectionColor
             };
             selectorBrush = new SolidColorBrush
             {
-                Color = selectorColor
+                Color = AppColor.SelectorColor
             };
         }
 
@@ -37,7 +37,7 @@ namespace WaveAnalyzer
             RedrawSelection(ref canvas);
         }
 
-        public void RedrawSelection(ref Canvas canvas)
+        private void RedrawSelection(ref Canvas canvas)
         {
             double selectionDifference = CurrentX - StartX;
 
@@ -55,9 +55,11 @@ namespace WaveAnalyzer
             };
 
             canvas.Children.Add(selection);
+
+            DrawSelector(ref canvas);
         }
 
-        public void DrawSelector(ref Canvas canvas)
+        private void DrawSelector(ref Canvas canvas)
         {
             Line selector = new Line()
             {

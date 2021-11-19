@@ -8,7 +8,7 @@ namespace WaveAnalyzer
 {
     class Wave
     {
-        private const int DATA_INDEX = 44;
+        private short dataIndex;
         private int chunkID;
         private int chunkSize;
         private int format;
@@ -28,24 +28,64 @@ namespace WaveAnalyzer
         {
             byte[] data = File.ReadAllBytes(filePath);
 
-            chunkID = ByteConverter.ToInt32BigEndian(data, 0);
-            chunkSize = ByteConverter.ToInt32(data, 4);
-            format = ByteConverter.ToInt32BigEndian(data, 8);
-            subchunk1ID = ByteConverter.ToInt32BigEndian(data, 12);
-            subchunk1Size = ByteConverter.ToInt32(data, 16);
-            audioFormat = ByteConverter.ToInt16(data, 20);
-            numChannels = ByteConverter.ToInt16(data, 22);
-            sampleRate = ByteConverter.ToInt32(data, 24);
-            byteRate = ByteConverter.ToInt32(data, 28);
-            blockAlign = ByteConverter.ToInt16(data, 32);
-            bitsPerSample = ByteConverter.ToInt16(data, 34);
-            subchunk2ID = ByteConverter.ToInt32BigEndian(data, 36);
-            subchunk2Size = ByteConverter.ToInt32(data, 40);
+            InitializeWaveHeader(ref data);
 
-            ExtractSamples(data);
+            ExtractSamples(ref data);
         }
 
-        private void ExtractSamples(byte[] data)
+        private void InitializeWaveHeader(ref byte[] data)
+        {
+            dataIndex = 0;
+
+            // Read until it hits "RIFF".
+            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != 0x52494646)
+            {
+                ++dataIndex;
+            }
+
+            chunkID = ByteConverter.ToInt32BigEndian(data, dataIndex);
+            dataIndex += 4;
+            chunkSize = ByteConverter.ToInt32(data, dataIndex);
+            dataIndex += 4;
+
+            // Read until it hits "WAVE".
+            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != 0x57415645)
+            {
+                ++dataIndex;
+            }
+
+            format = ByteConverter.ToInt32BigEndian(data, dataIndex);
+            dataIndex += 4;
+
+            // Read until it hits "fmt ".
+            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != 0x666d7420)
+            {
+                ++dataIndex;
+            }
+
+            subchunk1ID = ByteConverter.ToInt32BigEndian(data, dataIndex);
+            subchunk1Size = ByteConverter.ToInt32(data, dataIndex + 4);
+            audioFormat = ByteConverter.ToInt16(data, dataIndex + 8);
+            numChannels = ByteConverter.ToInt16(data, dataIndex + 10);
+            sampleRate = ByteConverter.ToInt32(data, dataIndex + 12);
+            byteRate = ByteConverter.ToInt32(data, dataIndex + 16);
+            blockAlign = ByteConverter.ToInt16(data, dataIndex + 20);
+            bitsPerSample = ByteConverter.ToInt16(data, dataIndex + 22);
+            dataIndex += 22;
+
+            // Read until it hits "data".
+            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != 0x64617461)
+            {
+                ++dataIndex;
+            }
+
+            subchunk2ID = ByteConverter.ToInt32BigEndian(data, dataIndex);
+            dataIndex += 4;
+            subchunk2Size = ByteConverter.ToInt32(data, dataIndex);
+            dataIndex += 4;
+        }
+
+        private void ExtractSamples(ref byte[] data)
         {
             // Initialize the channels 2D array where each row is a channel and every column is a sample.
             channels = new short[numChannels][];
@@ -61,7 +101,7 @@ namespace WaveAnalyzer
             {
                 for (short j = 0; j < numChannels; ++j)
                 {
-                    channels[j][i] = ByteConverter.ToInt16(data, DATA_INDEX + (i * 2 * numChannels) + (j * numChannels));
+                    channels[j][i] = ByteConverter.ToInt16(data, dataIndex + (i * 2 * numChannels) + (j * numChannels));
                 }
             }
         }

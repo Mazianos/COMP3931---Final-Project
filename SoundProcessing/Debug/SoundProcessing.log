@@ -1,2 +1,20 @@
-﻿     Creating library D:\COMP3931\Wave Analyzer\Debug\SoundProcessing.lib and object D:\COMP3931\Wave Analyzer\Debug\SoundProcessing.exp
-  SoundProcessing.vcxproj -> D:\COMP3931\Wave Analyzer\Debug\SoundProcessing.dll
+﻿  pch.c
+  dllmain.c
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(84,23): warning C4013: 'malloc' undefined; assuming extern returning int
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(84,40): warning C4047: '=': 'PWAVEHDR' differs in levels of indirection from 'int'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(85,40): warning C4047: '=': 'PWAVEHDR' differs in levels of indirection from 'int'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(89,28): warning C4047: '=': 'PBYTE' differs in levels of indirection from 'int'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(95,39): warning C4047: '=': 'PBYTE' differs in levels of indirection from 'int'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(96,39): warning C4047: '=': 'PBYTE' differs in levels of indirection from 'int'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(100,27): warning C4013: 'free' undefined; assuming extern returning int
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(104,29): warning C4133: 'function': incompatible types - from 'HINSTANCE' to 'HWND'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(106,20): warning C4098: 'BeginRecord': 'void' function returning a value
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(125,29): warning C4133: 'function': incompatible types - from 'HINSTANCE' to 'HWND'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(175,29): warning C4133: 'function': incompatible types - from 'HINSTANCE' to 'HWND'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(186,33): warning C4133: 'function': incompatible types - from 'HINSTANCE' to 'HWND'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(192,33): warning C4133: 'function': incompatible types - from 'HINSTANCE' to 'HWND'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(262,30): warning C4013: 'realloc' undefined; assuming extern returning int
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(262,46): warning C4047: '=': 'PBYTE' differs in levels of indirection from 'int'
+C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\dllmain.c(282,49): warning C4047: '=': 'PBYTE' differs in levels of indirection from 'int'
+     Creating library C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\Debug\SoundProcessing.lib and object C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\Debug\SoundProcessing.exp
+  SoundProcessing.vcxproj -> C:\Users\Joshua\COMP3931---Final-Project\SoundProcessing\Debug\SoundProcessing.dll

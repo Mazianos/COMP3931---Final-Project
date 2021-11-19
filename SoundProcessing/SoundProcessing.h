@@ -14,8 +14,6 @@ extern SOUND_PROCESSING_API void SetDWDataLength(DWORD);
 
 extern SOUND_PROCESSING_API void ReverseMemory(BYTE*, int);
 
-extern SOUND_PROCESSING_API BOOL WinProc(HWND, UINT, WPARAM, LPARAM);
-
 extern SOUND_PROCESSING_API void InitWave();
 
 extern SOUND_PROCESSING_API void BeginRecord();

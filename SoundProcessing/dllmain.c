@@ -18,6 +18,8 @@
 #define IDC_PLAY_SPEED                  1007
 #define INP_BUFFER_SIZE                 16384
 
+SOUND_PROCESSING_API BOOL WinProc(HWAVEOUT, UINT, DWORD, DWORD, DWORD);
+
 TCHAR szAppName[] = TEXT("Record1");
 static WAVEFORMATEX waveform;
 static BOOL         bRecording, bPlaying, bReverse, bPaused,
@@ -117,7 +119,7 @@ SOUND_PROCESSING_API void BeginRecord() {
     waveform.cbSize = 0;
 
     if (waveInOpen(&hWaveIn, WAVE_MAPPER, &waveform,
-        (DWORD)&WinProc, 0, CALLBACK_FUNCTION));
+        (DWORD)WinProc, 0, CALLBACK_FUNCTION));
     {
         free(pBuffer1);
         free(pBuffer2);
@@ -168,7 +170,7 @@ SOUND_PROCESSING_API void BeginPlay() {
     waveform.cbSize = 0;
 
     if (waveOutOpen(&hWaveOut, WAVE_MAPPER, &waveform,
-        (DWORD)&WinProc, 0, CALLBACK_FUNCTION))
+        (DWORD)WinProc, 0, CALLBACK_FUNCTION))
     {
         MessageBeep(MB_ICONEXCLAMATION);
     }
@@ -198,7 +200,7 @@ SOUND_PROCESSING_API void EndPlay() {
     waveOutReset(hWaveOut);
 }
 
-SOUND_PROCESSING_API BOOL WinProc(HWAVEIN hwi, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
+SOUND_PROCESSING_API BOOL WinProc(HWAVEIN hwi, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2)
 {
     switch (uMsg)
     {
@@ -281,7 +283,6 @@ SOUND_PROCESSING_API BOOL WinProc(HWAVEIN hwi, UINT uMsg, DWORD_PTR dwInstance, 
             free(pWaveHdr1);
             free(pWaveHdr2);
             free(pSaveBuffer);
-            return TRUE;
         }
 
         return TRUE;
