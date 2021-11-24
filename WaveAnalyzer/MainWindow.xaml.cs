@@ -18,17 +18,16 @@ using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 
-
-
 namespace WaveAnalyzer
 {
     public partial class MainWindow : Window
     {
         private Wave wave;
         private WaveDrawer waveDrawer;
-        ImageSourceConverter converter;
-        bool bRecording, bPlaying;
-        IntPtr hwnd;
+        private ImageSourceConverter converter;
+        private bool bRecording;
+        private bool bPlaying;
+        private IntPtr hwnd;
 
         [DllImport("ModelessDialog.dll")]
         public static extern IntPtr GetSaveBuffer();
@@ -68,69 +67,53 @@ namespace WaveAnalyzer
         private WaveSelector currentSelection;
         private short[][] cutSamples;
 
-        private Color waveColor = new Color()
-        {
-            R = 248,
-            G = 175,
-            B = 96,
-            A = 255
-        };
-        private Color selectionColor = new Color()
-        {
-            R = 96,
-            G = 175,
-            B = 248,
-            A = 255
-        };
-        private Color selectorColor = new Color()
-        {
-            R = 255,
-            G = 100,
-            B = 100,
-            A = 255
-        };
-
         public MainWindow()
         {
             InitializeComponent();
 
-            waveDrawer = new WaveDrawer(waveColor);
+            waveDrawer = new WaveDrawer();
             cutSamples = null;
 
-            // Set icon images.
+            SetIconImages();
+
+            InitWave();
+        }
+
+        private void SetIconImages()
+        {
             converter = new ImageSourceConverter();
             OpenIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\open.png"));
             SaveIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\save.png"));
             PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"));
             StopIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\stop.png"));
             RecordIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\record.png"));
-            InitWave();
         }
 
         public unsafe void OpenHandler(object sender, RoutedEventArgs e)
         {
             // Opens the open file dialog box.
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "WAV files (*.wav)|*.wav" +
-                "|All files (*.*)|*.*";
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+            };
 
             // Returns true when a file is opened. Return if not opened.
-            if (openFileDialog.ShowDialog() != true)
-            {
-                return;
-            }
+            if (openFileDialog.ShowDialog() != true) return;
 
             // Read the wave file in bytes.
-            // God this is ugly af.
             wave = new Wave(openFileDialog.FileName);
+
+            // God this is ugly af.
             short[] channel = wave.GetChannels()[0];
             byte[] dataArr = new byte[channel.Length];
             Buffer.BlockCopy(channel, 0, dataArr, 0, channel.Length);
+            byte* Pdata;
             fixed (byte* data = dataArr)
             {
-                SetSaveBuffer(data);
+                Pdata = data;
             }
-            SetDWDataLength((uint) wave.GetDataLength());
+            SetSaveBuffer(Pdata);
+            SetDWDataLength((uint)wave.GetDataLength());
 
             Trace.WriteLine("Done!");
 
@@ -153,14 +136,14 @@ namespace WaveAnalyzer
             {
                 PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\pause.png"));
                 BeginPlay();
-                bPlaying = true;
             }
             else
             {
                 PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"));
                 PausePlay();
-                bPlaying = false;
             }
+
+            bPlaying = !bPlaying;
         }
 
         /**
@@ -208,7 +191,7 @@ namespace WaveAnalyzer
         private void WaveMouseDownHandler(object sender, MouseButtonEventArgs e)
         {
             // Select a portion of the wave from the current mouse position.
-            currentSelection = new WaveSelector((int)(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset), selectionColor, selectorColor);
+            currentSelection = new WaveSelector((int)(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset));
             UpdateSelection(currentSelection.StartX);
         }
 
@@ -222,12 +205,9 @@ namespace WaveAnalyzer
         }
 
         private void UpdateSelection(int xPosition)
-        { 
+        {
             // Return if no wave is found or if there is no current selection.
-            if (wave == null || currentSelection == null)
-            {
-                return;
-            }
+            if (wave == null || currentSelection == null) return;
 
             ClearCanvases();
 
@@ -240,39 +220,27 @@ namespace WaveAnalyzer
 
             // Redraw the waves on top of the created selection rectangles.
             RedrawWaves();
-            if (!bRecording)
-            { 
-                //0x0111 is the code for WM_COMMAND
-                //1000 is the code for IDC_RECORD_BEG
-                SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1000)) & 0xffff)), (IntPtr)null);
-                bRecording = true;
-            } else
-            {
-                //0x0111 is the code for WM_COMMAND
-                //1001 is the code for IDC_RECORD_END
-                SendMessage(hwnd, 0x0111, (IntPtr)((ushort)(((ulong)(1001)) & 0xffff)), (IntPtr)null);
-                bRecording = false;
-            }
-            
         }
-        
+
         private void CutDeleteHandler(object sender, RoutedEventArgs e)
         {
             short[][] temp = wave.ExtractSamples(currentSelection.StartX, currentSelection.CurrentX);
-            
+
             if (e.Source.Equals(CutButton))
             {
                 cutSamples = temp;
             }
 
             int previousCurrentX = currentSelection.CurrentX;
-            currentSelection = new WaveSelector(previousCurrentX, selectionColor, selectorColor);
+            currentSelection = new WaveSelector(previousCurrentX);
+
             UpdateSelection(currentSelection.StartX);
-            // WHY AREN'T YOU DRAWING THE DAMN LINE??
-            /*foreach(var x in LeftChannelCanvas.Children)
+
+            // BUGGEGGEEDDDD
+            foreach(var x in LeftChannelCanvas.Children)
             {
                 Trace.WriteLine(x);
-            }*/
+            }
         }
 
         private void PasteHandler(object sender, RoutedEventArgs e)
