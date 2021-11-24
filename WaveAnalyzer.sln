@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaveAnalyzer", "WaveAnalyze
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C925F70A-7A21-42DE-A5F9-3B53EAA23100}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundProcessing", "SoundProcessing\SoundProcessing.vcxproj", "{45C03CDA-B060-4E42-A58B-E7A065665CE3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModelessDialog", "ModelessDialog\ModelessDialog.vcxproj", "{EA05708A-E3AE-4592-9AC0-F64D424D6A70}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,19 +31,22 @@ Global
 		{8D29C159-F9DC-42EB-9576-DEBAF00B830D}.Release|x64.Build.0 = Release|Any CPU
 		{8D29C159-F9DC-42EB-9576-DEBAF00B830D}.Release|x86.ActiveCfg = Release|Any CPU
 		{8D29C159-F9DC-42EB-9576-DEBAF00B830D}.Release|x86.Build.0 = Release|Any CPU
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Debug|x64.ActiveCfg = Debug|x64
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Debug|x64.Build.0 = Debug|x64
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Debug|x86.ActiveCfg = Debug|Win32
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Debug|x86.Build.0 = Debug|Win32
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Release|Any CPU.ActiveCfg = Release|Win32
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Release|x64.ActiveCfg = Release|x64
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Release|x64.Build.0 = Release|x64
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Release|x86.ActiveCfg = Release|Win32
-		{45C03CDA-B060-4E42-A58B-E7A065665CE3}.Release|x86.Build.0 = Release|Win32
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Debug|x64.ActiveCfg = Debug|x64
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Debug|x64.Build.0 = Debug|x64
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Debug|x86.ActiveCfg = Debug|Win32
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Debug|x86.Build.0 = Debug|Win32
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Release|Any CPU.ActiveCfg = Release|Win32
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Release|x64.ActiveCfg = Release|x64
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Release|x64.Build.0 = Release|x64
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Release|x86.ActiveCfg = Release|Win32
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EA05708A-E3AE-4592-9AC0-F64D424D6A70} = {C925F70A-7A21-42DE-A5F9-3B53EAA23100}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8BF44A6C-36EB-4BFC-AE3D-BD0008CB6D03}

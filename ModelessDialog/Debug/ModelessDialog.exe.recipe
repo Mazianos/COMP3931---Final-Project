@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\COMP3931\Wave Analyzer\x64\Debug\SoundProcessing.dll</FullPath>
+      <FullPath>D:\COMP3931\ModelessDialog\Debug\ModelessDialog.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

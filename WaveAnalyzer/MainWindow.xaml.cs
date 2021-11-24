@@ -30,37 +30,34 @@ namespace WaveAnalyzer
         bool bRecording, bPlaying;
         IntPtr hwnd;
 
-        [DllImport("SoundProcessing.dll")]
-        public static extern bool WinProc(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern IntPtr GetSaveBuffer();
 
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern uint GetDWDataLength();
 
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern unsafe void SetSaveBuffer(byte* saveBuffer);
 
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern void SetDWDataLength(uint dataWord);
 
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern void InitWave();
 
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern void BeginRecord();
 
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern void EndRecord();
 
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern void BeginPlay();
 
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern void PausePlay();
 
-        [DllImport("SoundProcessing.dll")]
+        [DllImport("ModelessDialog.dll")]
         public static extern void EndPlay();
 
         [DllImport("user32.dll")]
@@ -110,22 +107,6 @@ namespace WaveAnalyzer
             InitWave();
         }
 
-        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
-        {
-            if (WinProc(hwnd, msg, wParam, lParam))
-            {
-                return IntPtr.Zero;
-            }
-            return (IntPtr)1;
-        }
-
-        protected void OnInitialized(EventArgs e)
-        {
-            Window window = Window.GetWindow(this);
-            var wih = new WindowInteropHelper(window);
-            hwnd = wih.Handle;
-        }
-
         public unsafe void OpenHandler(object sender, RoutedEventArgs e)
         {
             // Opens the open file dialog box.
@@ -145,12 +126,10 @@ namespace WaveAnalyzer
             short[] channel = wave.GetChannels()[0];
             byte[] dataArr = new byte[channel.Length];
             Buffer.BlockCopy(channel, 0, dataArr, 0, channel.Length);
-            byte* Pdata;
             fixed (byte* data = dataArr)
             {
-                Pdata = data;
+                SetSaveBuffer(data);
             }
-            SetSaveBuffer(Pdata);
             SetDWDataLength((uint) wave.GetDataLength());
 
             Trace.WriteLine("Done!");
@@ -189,7 +168,8 @@ namespace WaveAnalyzer
          */
         public void StopHandler(object sender, RoutedEventArgs e)
         {
-            EndPlay();
+            EndRecord();
+            isRecording = false;
         }
 
         /**
@@ -197,15 +177,8 @@ namespace WaveAnalyzer
          */
         public void RecordHandler(object sender, RoutedEventArgs e)
         {
-            if (!isRecording)
-            {
-                BeginRecord();
-                isRecording = true;
-            } else
-            {
-                EndRecord();
-                isRecording = false;
-            }
+            BeginRecord();
+            isRecording = true;
         }
 
         private void WaveScrollHandler(object sender, ScrollChangedEventArgs e)

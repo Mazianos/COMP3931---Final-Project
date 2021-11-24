@@ -1,0 +1,10 @@
+﻿  ModelessDialog.c
+D:\COMP3931\ModelessDialog\ModelessDialog.c(65,15): warning C4133: 'function': incompatible types - from 'BOOL (__cdecl *)(HWND,UINT,WPARAM,LPARAM)' to 'DLGPROC'
+D:\COMP3931\ModelessDialog\ModelessDialog.c(66,19): warning C4047: '==': 'int' differs in levels of indirection from 'HWND'
+D:\COMP3931\ModelessDialog\ModelessDialog.c(73,49): warning C4047: 'function': 'DWORD' differs in levels of indirection from 'void *'
+D:\COMP3931\ModelessDialog\ModelessDialog.c(73,45): warning C4024: 'CreateThread': different types for formal and actual parameter 5
+D:\COMP3931\ModelessDialog\ModelessDialog.c(149,28): warning C4311: 'type cast': pointer truncation from 'HWND' to 'DWORD'
+D:\COMP3931\ModelessDialog\ModelessDialog.c(200,28): warning C4311: 'type cast': pointer truncation from 'HWND' to 'DWORD'
+D:\COMP3931\ModelessDialog\ModelessDialog.c(259,65): warning C4311: 'type cast': pointer truncation from 'HWND' to 'DWORD'
+     Creating library D:\COMP3931\ModelessDialog\x64\Debug\ModelessDialog.lib and object D:\COMP3931\ModelessDialog\x64\Debug\ModelessDialog.exp
+  ModelessDialog.vcxproj -> D:\COMP3931\ModelessDialog\x64\Debug\ModelessDialog.dll

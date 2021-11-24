@@ -1,0 +1,7 @@
+﻿  ModelessDialog.c
+D:\COMP3931\ModelessDialog\ModelessDialog.c(31,5): warning C4007: 'WinMain': must be '__stdcall'
+D:\COMP3931\ModelessDialog\ModelessDialog.c(34,19): warning C4047: '==': 'int' differs in levels of indirection from 'HWND'
+D:\COMP3931\ModelessDialog\ModelessDialog.c(447): warning C4716: 'GetSaveBuffer': must return a value
+D:\COMP3931\ModelessDialog\ModelessDialog.c(451): warning C4716: 'GetDWDataLength': must return a value
+     Creating library D:\COMP3931\ModelessDialog\Debug\ModelessDialog.lib and object D:\COMP3931\ModelessDialog\Debug\ModelessDialog.exp
+  ModelessDialog.vcxproj -> D:\COMP3931\ModelessDialog\Debug\ModelessDialog.exe

@@ -1,8 +1,10 @@
 #pragma once
 
+#include <Windows.h>
+
 #define SOUND_PROCESSING_API __declspec(dllexport)
 
-#include <Windows.h>
+
 
 extern SOUND_PROCESSING_API PBYTE GetSaveBuffer();
 
@@ -12,9 +14,7 @@ extern SOUND_PROCESSING_API void SetSaveBuffer(PBYTE);
 
 extern SOUND_PROCESSING_API void SetDWDataLength(DWORD);
 
-extern SOUND_PROCESSING_API void ReverseMemory(BYTE*, int);
-
-extern SOUND_PROCESSING_API BOOL WinProc(HWND, UINT, WPARAM, LPARAM);
+extern SOUND_PROCESSING_API void ReverseMemoryFunct();
 
 extern SOUND_PROCESSING_API void InitWave();
 
