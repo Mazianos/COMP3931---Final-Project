@@ -5,11 +5,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WaveAnalyzer
 {
     class WaveDrawer
     {
+        private short maxSample;
+        private short minSample;
         private SolidColorBrush waveBrush;
 
         public WaveDrawer()
@@ -20,39 +23,25 @@ namespace WaveAnalyzer
             };
         }
 
-        public void DrawWave(short[] samples, ref Canvas canvas, double offset, double windowWidth)
+        public void SetMinMaxSample(short[] samples)
         {
-            PointCollection wavePoints = new PointCollection();
+            minSample = GetMinSample(samples);
+            maxSample = GetMaxSample(samples);
+        }
 
-            Polyline wavePolyline = new Polyline()
-            {
-                Points = wavePoints,
-                Stroke = waveBrush,
-                StrokeThickness = 1
-            };
-            
+        public void DrawWave(short[] samples, ref Chart chart, int offset, double windowWidth)
+        {
             // Used for clamping the value of each sample to between 0 and 1.
-            int min = GetMinSample(samples);
-            float denom = GetMaxSample(samples) - min;
+            float denom = maxSample - minSample;
             if (denom == 0)
             {
                 ++denom;
             }
 
-            for (int i = (int)offset; i < samples.Length && i < windowWidth + offset; ++i)
+            for (int i = 0; i + offset < samples.Length && i < windowWidth; ++i)
             {
-                Point point = new Point()
-                {
-                    X = i,
-                    Y = (samples[i] - min) / denom * 150
-                };
-
-                wavePoints.Add(point);
+                chart.Series[0].Points.AddXY(i, (samples[i + offset] - minSample) / denom * 1.8 - 0.9);
             }
-
-            canvas.Children.Add(wavePolyline);
-
-            canvas.Width = samples.Length;
         }
 
         private short GetMinSample(short[] samples)

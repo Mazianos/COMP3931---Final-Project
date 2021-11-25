@@ -29,12 +29,13 @@
             </StackPanel>
             <Slider Style="{DynamicResource VolumeSlider}" Maximum="100" Width="250" Value="50" HorizontalAlignment="Right" VerticalAlignment="Center"/>
         </Grid>
-        <ScrollViewer Name="WaveScroll" ScrollChanged="WaveScrollHandler" PreviewMouseDown="WaveMouseDownHandler" PreviewMouseMove="WaveMouseMoveHandler" Margin="0, 25, 0, 0">
-            <StackPanel Name="ChannelStack">
-                <Canvas Name="LeftChannelCanvas" Margin="0, 175, 0, 25" RenderTransform="1 0 0 -1 0 0"/>
-                <Canvas Name="RightChannelCanvas" Margin="0, 175, 0, 25"  RenderTransform="1 0 0 -1 0 0"/>
-            </StackPanel>
-        </ScrollViewer>
+        <StackPanel>
+            <WindowsFormsHost Name="LeftHost" Margin="10, 50, 10, 0"/>
+            <WindowsFormsHost Name="RightHost" Margin="10, -20, 10, 0"/>
+        </StackPanel>
+        <ScrollBar Name="WaveScroller" Orientation="Horizontal" ValueChanged="WaveScrollHandler"/>
+
+
         <Button Name="DeleteButton" Content="DELETE" Click="CutDeleteHandler"/>
         <Button Name="CutButton" Content="CUT" Click="CutDeleteHandler"/>
         <Button Content="PASTE" Click="PasteHandler"/>

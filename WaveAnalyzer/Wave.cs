@@ -15,13 +15,13 @@ namespace WaveAnalyzer
         private int subchunk1ID;
         private int subchunk1Size;
         private short audioFormat;
-        private short numChannels;
+        public short NumChannels { get; private set; }
         private int sampleRate;
         private int byteRate;
         private short blockAlign;
         private short bitsPerSample;
         private int subchunk2ID;
-        private int subchunk2Size;
+        public int Subchunk2Size { get; private set; }
         private short[][] channels;
 
         public Wave(string filePath)
@@ -66,7 +66,7 @@ namespace WaveAnalyzer
             subchunk1ID = ByteConverter.ToInt32BigEndian(data, dataIndex);
             subchunk1Size = ByteConverter.ToInt32(data, dataIndex + 4);
             audioFormat = ByteConverter.ToInt16(data, dataIndex + 8);
-            numChannels = ByteConverter.ToInt16(data, dataIndex + 10);
+            NumChannels = ByteConverter.ToInt16(data, dataIndex + 10);
             sampleRate = ByteConverter.ToInt32(data, dataIndex + 12);
             byteRate = ByteConverter.ToInt32(data, dataIndex + 16);
             blockAlign = ByteConverter.ToInt16(data, dataIndex + 20);
@@ -81,16 +81,16 @@ namespace WaveAnalyzer
 
             subchunk2ID = ByteConverter.ToInt32BigEndian(data, dataIndex);
             dataIndex += 4;
-            subchunk2Size = ByteConverter.ToInt32(data, dataIndex);
+            Subchunk2Size = ByteConverter.ToInt32(data, dataIndex);
             dataIndex += 4;
         }
 
         private void ExtractSamples(ref byte[] data)
         {
             // Initialize the channels 2D array where each row is a channel and every column is a sample.
-            channels = new short[numChannels][];
-            int samplesPerChannel = subchunk2Size / 2 / numChannels;
-            for (short i = 0; i < numChannels; ++i)
+            channels = new short[NumChannels][];
+            int samplesPerChannel = Subchunk2Size / 2 / NumChannels;
+            for (short i = 0; i < NumChannels; ++i)
             {
                 channels[i] = new short[samplesPerChannel];
             }
@@ -99,9 +99,9 @@ namespace WaveAnalyzer
             // For mono, samples are two bytes each. For stereo, it is four bytes, first two left, then two right.
             for (int i = 0; i < samplesPerChannel; ++i)
             {
-                for (short j = 0; j < numChannels; ++j)
+                for (short j = 0; j < NumChannels; ++j)
                 {
-                    channels[j][i] = ByteConverter.ToInt16(data, dataIndex + (i * 2 * numChannels) + (j * numChannels));
+                    channels[j][i] = ByteConverter.ToInt16(data, dataIndex + (i * 2 * NumChannels) + (j * NumChannels));
                 }
             }
         }
@@ -135,9 +135,9 @@ namespace WaveAnalyzer
             }
 
             // Holds the extracted samples for each channel.
-            short[][] extractedSamples = new short[numChannels][];
+            short[][] extractedSamples = new short[NumChannels][];
             
-            for (int i = 0; i < numChannels; ++i)
+            for (int i = 0; i < NumChannels; ++i)
             {
                 int extractedSamplesLength = end - start + 1;
                 // Extract the samples for this channel in this array.
@@ -185,7 +185,7 @@ namespace WaveAnalyzer
                 position = 0;
             }
 
-            for (int i = 0; i < numChannels; ++i)
+            for (int i = 0; i < NumChannels; ++i)
             {
                 short[] newChannel = new short[channels[i].Length + samples[i].Length];
 
@@ -206,11 +206,6 @@ namespace WaveAnalyzer
 
                 channels[i] = newChannel;
             }
-        }
-
-        public int GetDataLength()
-        {
-            return subchunk2Size;
         }
     }
 }

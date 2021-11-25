@@ -10,6 +10,7 @@ namespace WaveAnalyzer
         public static Color WaveColor { get => waveColor; private set => waveColor = value; }
         public static Color SelectionColor { get => selectionColor; private set => selectionColor = value; }
         public static Color SelectorColor { get => selectorColor; private set => selectorColor = value; }
+        public static System.Drawing.Color ChartColor { get => chartColor; private set => chartColor = value; }
 
         private static Color waveColor = new Color()
         {
@@ -34,5 +35,7 @@ namespace WaveAnalyzer
             B = 100,
             A = 255
         };
+
+        private static System.Drawing.Color chartColor = System.Drawing.Color.FromArgb(88, 99, 103);
     }
 }
