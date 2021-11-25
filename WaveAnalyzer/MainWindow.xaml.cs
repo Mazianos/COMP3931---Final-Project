@@ -39,7 +39,7 @@ namespace WaveAnalyzer
         public static extern unsafe void SetSaveBuffer(byte* saveBuffer);
 
         [DllImport("ModelessDialog.dll")]
-        public static extern void SetDWDataLength(uint dataWord);
+        public static extern void SetDWDataLength(ulong dataWord);
 
         [DllImport("ModelessDialog.dll")]
         public static extern void InitWave();
@@ -58,9 +58,6 @@ namespace WaveAnalyzer
 
         [DllImport("ModelessDialog.dll")]
         public static extern void EndPlay();
-
-        [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int wMsg, IntPtr wParam, IntPtr lParam);
 
         private bool isPlaying;
         private bool isRecording = false;
@@ -111,9 +108,9 @@ namespace WaveAnalyzer
             fixed (byte* data = dataArr)
             {
                 Pdata = data;
+                SetDWDataLength((ulong)wave.GetDataLength());
+                SetSaveBuffer(Pdata);
             }
-            SetSaveBuffer(Pdata);
-            SetDWDataLength((uint)wave.GetDataLength());
 
             Trace.WriteLine("Done!");
 

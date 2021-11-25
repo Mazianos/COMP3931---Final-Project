@@ -29,17 +29,17 @@ BOOL CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
 TCHAR szAppName[] = TEXT("Record1");
 static HWND hDialog;
 static HMODULE hInstance;
-    static BOOL         bRecording, bPlaying, bReverse, bPaused,
-        bEnding, bTerminating;
-    static DWORD        dwDataLength, dwRepetitions = 1;
-    static HWAVEIN      hWaveIn;
-    static HWAVEOUT     hWaveOut;
-    static PBYTE        pBuffer1, pBuffer2, pSaveBuffer, pNewBuffer;
-    static PWAVEHDR     pWaveHdr1, pWaveHdr2;
-    static TCHAR        szOpenError[] = TEXT("Error opening waveform audio!");
-    static TCHAR        szMemError[] = TEXT("Error allocating memory!");
-    static WAVEFORMATEX waveform;
-    static DWORD        msgLoop;
+static BOOL         bRecording, bPlaying, bReverse, bPaused,
+    bEnding, bTerminating;
+static DWORD        dwDataLength, dwRepetitions = 1;
+static HWAVEIN      hWaveIn;
+static HWAVEOUT     hWaveOut;
+static PBYTE        pBuffer1, pBuffer2, pSaveBuffer, pNewBuffer;
+static PWAVEHDR     pWaveHdr1, pWaveHdr2;
+static TCHAR        szOpenError[] = TEXT("Error opening waveform audio!");
+static TCHAR        szMemError[] = TEXT("Error allocating memory!");
+static WAVEFORMATEX waveform;
+static DWORD        msgLoop;
 
 BOOL APIENTRY DllMain(HMODULE hModule,
     DWORD  ul_reason_for_call,
@@ -423,47 +423,47 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
 
-SOUND_PROCESSING_API PBYTE GetSaveBuffer() {
+PBYTE GetSaveBuffer() {
     return pSaveBuffer;
 }
 
-SOUND_PROCESSING_API DWORD GetDWDataLength() {
+DWORD GetDWDataLength() {
     return dwDataLength;
 }
 
-SOUND_PROCESSING_API void SetSaveBuffer(PBYTE buffer) {
-    pSaveBuffer = buffer;
+void SetSaveBuffer(PBYTE buffer) {
+    memcpy(pSaveBuffer, buffer, dwDataLength);
 }
 
-SOUND_PROCESSING_API void SetDWDataLength(DWORD data) {
+void SetDWDataLength(DWORD data) {
     dwDataLength = data;
 }
 
-SOUND_PROCESSING_API void ReverseMemoryFunct()
+void ReverseMemoryFunct()
 {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_PLAY_REV, 0), 0);
 }
 
-SOUND_PROCESSING_API void InitWave() {
+void InitWave() {
     start();
 }
 
-SOUND_PROCESSING_API void BeginRecord() {
+void BeginRecord() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_RECORD_BEG, 0), 0);
 }
 
-SOUND_PROCESSING_API void EndRecord() {
+void EndRecord() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_RECORD_END, 0), 0);
 }
 
-SOUND_PROCESSING_API void PausePlay() {
+void PausePlay() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_PLAY_PAUSE, 0), 0);
 }
 
-SOUND_PROCESSING_API void BeginPlay() {
+void BeginPlay() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_PLAY_BEG, 0), 0);
 }
 
-SOUND_PROCESSING_API void EndPlay() {
+void EndPlay() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_PLAY_END, 0), 0);
 }

@@ -39,3 +39,4 @@ C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\Wa
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.genruntimeconfig.cache
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.csproj.AssemblyReference.cache
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\App.baml
+D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\App.baml
