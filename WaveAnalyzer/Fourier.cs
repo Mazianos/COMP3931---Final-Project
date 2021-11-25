@@ -13,6 +13,11 @@ namespace WaveAnalyzer
             this.real = real;
             this.imag = imag;
         }
+
+        public static Complex operator+ (Complex a, Complex b)
+        {
+            return new Complex(a.real + b.real, a.imag + b.imag);
+        }
     }
 
     public struct CosWave
@@ -35,13 +40,13 @@ namespace WaveAnalyzer
     {
         private const int DECIMAL_PLACES = 3;
 
-        public static Complex[] DFT(double[] s, int N)
+        public static Complex[] DFT(short[] s, int N, int start)
         {
             Complex[] A = new Complex[N];
 
             for (int f = 0; f < N; ++f)
             {
-                for (int t = 0; t < N; ++t)
+                for (int t = start; t < N + start; ++t)
                 {
                     A[f].real += s[t] * Math.Cos(2 * Math.PI * t * f / N);
                     A[f].imag -= s[t] * Math.Sin(2 * Math.PI * t * f / N);

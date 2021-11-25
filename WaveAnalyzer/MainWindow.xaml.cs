@@ -6,84 +6,115 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
+using System.Windows.Input;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WaveAnalyzer
 {
     public partial class MainWindow : Window
     {
+        private Chart leftChart;
+        private Chart rightChart;
+        private Chart dftChart;
+
         private Wave wave;
         private WaveDrawer waveDrawer;
-        private ImageSourceConverter converter;
+        private WaveZoomer waveZoomer;
+        private Commands commands;
+        private IntPtr hwnd;
         private bool bRecording;
         private bool bPlaying;
-        private IntPtr hwnd;
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern IntPtr GetSaveBuffer();
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern uint GetDWDataLength();
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern unsafe void SetSaveBuffer(byte* saveBuffer);
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern void SetDWDataLength(ulong dataWord);
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern void InitWave();
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern void BeginRecord();
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern void EndRecord();
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern void BeginPlay();
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern void PausePlay();
-
-        [DllImport("ModelessDialog.dll")]
-        public static extern void EndPlay();
+        private short[][] cutSamples;
+        private short leftMinSample;
+        private short leftMaxSample;
+        private short rightMaxSample;
+        private short rightMinSample;
 
         private bool isPlaying;
         private bool isRecording = false;
         private WaveSelector currentSelection;
-        private short[][] cutSamples;
 
         public MainWindow()
         {
             InitializeComponent();
 
             waveDrawer = new WaveDrawer();
+            waveZoomer = new WaveZoomer();
+            commands = new Commands();
             cutSamples = null;
 
             SetIconImages();
+            SetupCommands();
+            SetupCharts();
 
-            InitWave();
+            ModelessDialog.InitWave();
         }
-
         private void SetIconImages()
         {
-            converter = new ImageSourceConverter();
-            OpenIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\open.png"));
-            SaveIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\save.png"));
-            PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"));
-            StopIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\stop.png"));
-            RecordIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\record.png"));
+            OpenIcon.Source = AppImage.OpenIcon;
+            SaveIcon.Source = AppImage.SaveIcon;
+            PlayPauseIcon.Source = AppImage.PlayIcon;
+            StopIcon.Source = AppImage.StopIcon;
+            RecordIcon.Source = AppImage.RecordIcon;
+        }
+
+        private void SetupCommands()
+        {
+            CommandBindings.Add(new CommandBinding(commands.Cut, CutDeleteHandler));
+            CommandBindings.Add(new CommandBinding(commands.Paste, PasteHandler));
+            CommandBindings.Add(new CommandBinding(commands.Delete, CutDeleteHandler));
+        }
+
+        private void SetupCharts()
+        {
+            leftChart = ChartCreator.CreateChart();
+            rightChart = ChartCreator.CreateChart();
+
+            LeftHost.Child = leftChart;
+            RightHost.Child = rightChart;
+
+            leftChart.MouseWheel += ChartMouseWheelHandler;
+            rightChart.MouseWheel += ChartMouseWheelHandler;
+
+            leftChart.SelectionRangeChanging += ChartSelectionHandler;
+            rightChart.SelectionRangeChanging += ChartSelectionHandler;
+        }
+
+       
+        private void ChartMouseWheelHandler(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            waveZoomer.HandleZoom(ref leftChart, e.Delta, e.X);
+            waveZoomer.HandleZoom(ref rightChart, e.Delta, e.X);
+        }
+
+        private void ChartSelectionHandler(object sender, CursorEventArgs e)
+        {
+            if (sender == leftChart)
+            {
+                var cursorX = leftChart.ChartAreas[0].CursorX;
+                SyncCursors(cursorX.SelectionStart, cursorX.SelectionEnd);
+            }
+            else
+            {
+                var cursorX = rightChart.ChartAreas[0].CursorX;
+                SyncCursors(cursorX.SelectionStart, cursorX.SelectionEnd);
+            }
+        }
+
+        private void SyncCursors(double start, double end)
+        {
+            var cursorX = leftChart.ChartAreas[0].CursorX;
+            cursorX.SelectionStart = start;
+            cursorX.SelectionEnd = end;
+            cursorX.Position = end;
+
+            cursorX = rightChart.ChartAreas[0].CursorX;
+            cursorX.SelectionStart = start;
+            cursorX.SelectionEnd = end;
+            cursorX.Position = end;
         }
 
         public unsafe void OpenHandler(object sender, RoutedEventArgs e)
@@ -101,21 +132,32 @@ namespace WaveAnalyzer
             wave = new Wave(openFileDialog.FileName);
 
             // God this is ugly af.
-            short[] channel = wave.GetChannels()[0];
+            short[] channel = wave.Channels[0];
             byte[] dataArr = new byte[channel.Length];
             Buffer.BlockCopy(channel, 0, dataArr, 0, channel.Length);
             byte* Pdata;
             fixed (byte* data = dataArr)
             {
                 Pdata = data;
-                SetDWDataLength((ulong)wave.GetDataLength());
-                SetSaveBuffer(Pdata);
+                //ModelessDialog.SetDWDataLength((ulong)wave.Subchunk2Size);
+                //ModelessDialog.SetSaveBuffer(Pdata);
             }
 
             Trace.WriteLine("Done!");
 
+            leftMinSample = waveDrawer.GetMinSample(wave.Channels[0]);
+            leftMaxSample = waveDrawer.GetMaxSample(wave.Channels[0]);
+
+            if (!wave.IsMono())
+            {
+                rightMinSample = waveDrawer.GetMinSample(wave.Channels[1]);
+                rightMaxSample = waveDrawer.GetMaxSample(wave.Channels[1]);
+            }
+
+            WaveScroller.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels - 1000;
+
             // Drawing.
-            ClearCanvases();
+            ClearCharts();
             RedrawWaves();
         }
 
@@ -131,13 +173,15 @@ namespace WaveAnalyzer
         {
             if (!bPlaying)
             {
-                PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\pause.png"));
-                BeginPlay();
+                RecordButton.IsEnabled = false;
+                PlayPauseIcon.Source = AppImage.PauseIcon;
+                ModelessDialog.BeginPlay();
             }
             else
             {
-                PlayPauseIcon.Source = (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\play.png"));
-                PausePlay();
+                RecordButton.IsEnabled = true;
+                PlayPauseIcon.Source = AppImage.PlayIcon;
+                ModelessDialog.PausePlay();
             }
 
             bPlaying = !bPlaying;
@@ -148,8 +192,12 @@ namespace WaveAnalyzer
          */
         public void StopHandler(object sender, RoutedEventArgs e)
         {
-            EndRecord();
-            isRecording = false;
+            OpenButton.IsEnabled = true;
+            SaveButton.IsEnabled = true;
+            PlayPauseButton.IsEnabled = true;
+            RecordButton.IsEnabled = true;
+            ModelessDialog.EndRecord();
+            bRecording = false;
         }
 
         /**
@@ -157,95 +205,78 @@ namespace WaveAnalyzer
          */
         public void RecordHandler(object sender, RoutedEventArgs e)
         {
-            BeginRecord();
-            isRecording = true;
+            OpenButton.IsEnabled = false;
+            SaveButton.IsEnabled = false;
+            PlayPauseButton.IsEnabled = false;
+            RecordButton.IsEnabled = false;
+            bRecording = true;
+            ModelessDialog.BeginRecord();
         }
 
-        private void WaveScrollHandler(object sender, ScrollChangedEventArgs e)
+        private void ClearCharts()
         {
-            ClearCanvases();
-            RedrawWaves();
-        }
-
-        private void ClearCanvases()
-        {
-            LeftChannelCanvas.Children.Clear();
-            RightChannelCanvas.Children.Clear();
+            leftChart.Series[0].Points.Clear();
+            rightChart.Series[0].Points.Clear();
         }
 
         private void RedrawWaves()
         {
             if (wave != null)
             {
-                waveDrawer.DrawWave(wave.GetChannels()[0], ref LeftChannelCanvas, WaveScroll.HorizontalOffset, SystemParameters.PrimaryScreenWidth);
+                waveDrawer.DrawWave(wave.Channels[0], ref leftChart, (int)WaveScroller.Value, leftChart.Width, leftMinSample, leftMaxSample);
                 if (!wave.IsMono())
                 {
-                    waveDrawer.DrawWave(wave.GetChannels()[1], ref RightChannelCanvas, WaveScroll.HorizontalOffset, SystemParameters.PrimaryScreenWidth);
+                    waveDrawer.DrawWave(wave.Channels[1], ref rightChart, (int)WaveScroller.Value, rightChart.Width, rightMinSample, rightMaxSample);
                 }
             }
         }
 
-        private void WaveMouseDownHandler(object sender, MouseButtonEventArgs e)
+        private void WaveScrollHandler(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            // Select a portion of the wave from the current mouse position.
-            currentSelection = new WaveSelector((int)(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset));
-            UpdateSelection(currentSelection.StartX);
-        }
-
-        private void WaveMouseMoveHandler(object sender, MouseEventArgs e)
-        {
-            // Update the selection if the mouse is held down.
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                UpdateSelection((int)(e.GetPosition(WaveScroll).X + WaveScroll.HorizontalOffset));
-            }
-        }
-
-        private void UpdateSelection(int xPosition)
-        {
-            // Return if no wave is found or if there is no current selection.
-            if (wave == null || currentSelection == null) return;
-
-            ClearCanvases();
-
-            // Update the selection by giving it the current x position of the mouse and the relevant canvases.
-            currentSelection.UpdateSelection(xPosition, ref LeftChannelCanvas);
-            if (!wave.IsMono())
-            {
-                currentSelection.UpdateSelection(xPosition, ref RightChannelCanvas);
-            }
-
-            // Redraw the waves on top of the created selection rectangles.
+            ClearCharts();
             RedrawWaves();
         }
 
-        private void CutDeleteHandler(object sender, RoutedEventArgs e)
+        private void CutDeleteHandler(object sender, ExecutedRoutedEventArgs e)
         {
-            short[][] temp = wave.ExtractSamples(currentSelection.StartX, currentSelection.CurrentX);
+            var cursor = leftChart.ChartAreas[0].CursorX;
+            short[][] temp = wave.ExtractSamples((int)(cursor.SelectionStart + WaveScroller.Value), (int)(cursor.SelectionEnd + WaveScroller.Value));
 
-            if (e.Source.Equals(CutButton))
+            if (e.Command == commands.Cut)
             {
                 cutSamples = temp;
             }
 
-            int previousCurrentX = currentSelection.CurrentX;
-            currentSelection = new WaveSelector(previousCurrentX);
+            SyncCursors(cursor.SelectionStart, cursor.SelectionStart);
 
-            UpdateSelection(currentSelection.StartX);
-
-            // BUGGEGGEEDDDD
-            foreach(var x in LeftChannelCanvas.Children)
-            {
-                Trace.WriteLine(x);
-            }
+            ClearCharts();
+            RedrawWaves();
         }
 
         private void PasteHandler(object sender, RoutedEventArgs e)
         {
-            wave.InsertSamples(cutSamples, currentSelection.CurrentX);
+            wave.InsertSamples(cutSamples, (int)(leftChart.ChartAreas[0].CursorX.SelectionEnd + WaveScroller.Value));
 
-            ClearCanvases();
+            ClearCharts();
             RedrawWaves();
+        }
+
+
+        private const int SAMPLES_AT_A_TIME = 22050;
+        private void DFTHandler(object sender, RoutedEventArgs e)
+        {
+            Complex[] A = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
+            for (int i = 1; i < wave.Channels[0].Length / SAMPLES_AT_A_TIME; i++)
+            {
+                Complex[] A2 = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, i * SAMPLES_AT_A_TIME);
+                for (int j = 0; j < A.Length; j++)
+                {
+                    A[i] += A2[i];
+                }
+            }
+            Fourier.DivideByN(A, SAMPLES_AT_A_TIME);
+            //Fourier.PrintDoubles(Fourier.GetAmplitudes(A));
+            Fourier.PrintComplex(A);
         }
     }
 }
