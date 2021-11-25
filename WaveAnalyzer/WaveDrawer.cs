@@ -11,25 +11,7 @@ namespace WaveAnalyzer
 {
     class WaveDrawer
     {
-        private short maxSample;
-        private short minSample;
-        private SolidColorBrush waveBrush;
-
-        public WaveDrawer()
-        {
-            waveBrush = new SolidColorBrush
-            {
-                Color = AppColor.WaveColor
-            };
-        }
-
-        public void SetMinMaxSample(short[] samples)
-        {
-            minSample = GetMinSample(samples);
-            maxSample = GetMaxSample(samples);
-        }
-
-        public void DrawWave(short[] samples, ref Chart chart, int offset, double windowWidth)
+        public void DrawWave(short[] samples, ref Chart chart, int offset, double windowWidth, short minSample, short maxSample)
         {
             // Used for clamping the value of each sample to between 0 and 1.
             float denom = maxSample - minSample;
@@ -44,7 +26,7 @@ namespace WaveAnalyzer
             }
         }
 
-        private short GetMinSample(short[] samples)
+        public short GetMinSample(short[] samples)
         {
             short minSample = 0;
 
@@ -59,7 +41,7 @@ namespace WaveAnalyzer
             return minSample;
         }
 
-        public static short GetMaxSample(short[] samples)
+        public short GetMaxSample(short[] samples)
         {
             short maxSample = 0;
 

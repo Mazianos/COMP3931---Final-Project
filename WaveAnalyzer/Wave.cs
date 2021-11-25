@@ -22,7 +22,7 @@ namespace WaveAnalyzer
         private short bitsPerSample;
         private int subchunk2ID;
         public int Subchunk2Size { get; private set; }
-        private short[][] channels;
+        public short[][] Channels { get; private set; }
 
         public Wave(string filePath)
         {
@@ -88,11 +88,11 @@ namespace WaveAnalyzer
         private void ExtractSamples(ref byte[] data)
         {
             // Initialize the channels 2D array where each row is a channel and every column is a sample.
-            channels = new short[NumChannels][];
+            Channels = new short[NumChannels][];
             int samplesPerChannel = Subchunk2Size / 2 / NumChannels;
             for (short i = 0; i < NumChannels; ++i)
             {
-                channels[i] = new short[samplesPerChannel];
+                Channels[i] = new short[samplesPerChannel];
             }
 
             // Iterate through the samples and push the float values to their respective channel arrays.
@@ -101,19 +101,14 @@ namespace WaveAnalyzer
             {
                 for (short j = 0; j < NumChannels; ++j)
                 {
-                    channels[j][i] = ByteConverter.ToInt16(data, dataIndex + (i * 2 * NumChannels) + (j * NumChannels));
+                    Channels[j][i] = ByteConverter.ToInt16(data, dataIndex + (i * 2 * NumChannels) + (j * NumChannels));
                 }
             }
         }
 
-        public short[][] GetChannels()
-        {
-            return channels;
-        }
-
         public bool IsMono()
         {
-            return channels.Length == 1;
+            return Channels.Length == 1;
         }
 
         public short[][] ExtractSamples(int firstIndex, int secondIndex)
@@ -121,7 +116,7 @@ namespace WaveAnalyzer
             int start = firstIndex < secondIndex ? firstIndex : secondIndex;
             int end = firstIndex < secondIndex ? secondIndex : firstIndex;
 
-            if (channels[0].Length == 0)
+            if (Channels[0].Length == 0)
             {
                 return new short[0][];
             }
@@ -129,9 +124,9 @@ namespace WaveAnalyzer
             {
                 start = 0;
             }
-            if (end > channels[0].Length - 1)
+            if (end > Channels[0].Length - 1)
             {
-                end = channels[0].Length - 1;
+                end = Channels[0].Length - 1;
             }
 
             // Holds the extracted samples for each channel.
@@ -144,27 +139,27 @@ namespace WaveAnalyzer
                 extractedSamples[i] = new short[extractedSamplesLength];
 
                 // Holds the remaining samples in the channel, after the specified samples are extracted.
-                short[] newChannel = new short[channels[i].Length - extractedSamplesLength];
+                short[] newChannel = new short[Channels[i].Length - extractedSamplesLength];
                 
                 // Put the first half of the unextracted samples from the original channel to the new channel.
                 for (int j = 0; j < start; ++j)
                 {
-                    newChannel[j] = channels[i][j];
+                    newChannel[j] = Channels[i][j];
                 }
 
                 // Extracted the samples from the original channel to the new array.
                 for (int j = 0; j < extractedSamplesLength; ++j)
                 {
-                    extractedSamples[i][j] = channels[i][start + j];
+                    extractedSamples[i][j] = Channels[i][start + j];
                 }
 
                 // Put the second half of the unextracted samples from the original channel to the new channel.
                 for (int j = start; j < newChannel.Length; ++j)
                 {
-                    newChannel[j] = channels[i][extractedSamplesLength + j];
+                    newChannel[j] = Channels[i][extractedSamplesLength + j];
                 }
 
-                channels[i] = newChannel;
+                Channels[i] = newChannel;
             }
 
             return extractedSamples;
@@ -176,9 +171,9 @@ namespace WaveAnalyzer
             {
                 return;
             }
-            if (position > channels[0].Length - 1)
+            if (position > Channels[0].Length - 1)
             {
-                position = channels[0].Length - 1;
+                position = Channels[0].Length - 1;
             }
             if (position < 0)
             {
@@ -187,11 +182,11 @@ namespace WaveAnalyzer
 
             for (int i = 0; i < NumChannels; ++i)
             {
-                short[] newChannel = new short[channels[i].Length + samples[i].Length];
+                short[] newChannel = new short[Channels[i].Length + samples[i].Length];
 
                 for (int j = 0; j < position; ++j)
                 {
-                    newChannel[j] = channels[i][j];
+                    newChannel[j] = Channels[i][j];
                 }
 
                 for (int j = 0; j < samples[i].Length; ++j)
@@ -199,12 +194,12 @@ namespace WaveAnalyzer
                     newChannel[j + position] = samples[i][j];
                 }
 
-                for (int j = position; j < channels[i].Length; ++j)
+                for (int j = position; j < Channels[i].Length; ++j)
                 {
-                    newChannel[j + samples[i].Length] = channels[i][j];
+                    newChannel[j + samples[i].Length] = Channels[i][j];
                 }
 
-                channels[i] = newChannel;
+                Channels[i] = newChannel;
             }
         }
     }

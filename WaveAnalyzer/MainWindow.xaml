@@ -31,13 +31,8 @@
         </Grid>
         <StackPanel>
             <WindowsFormsHost Name="LeftHost" Margin="10, 50, 10, 0"/>
-            <WindowsFormsHost Name="RightHost" Margin="10, -20, 10, 0"/>
+            <WindowsFormsHost Name="RightHost" Margin="10, -10, 10, 0"/>
+            <ScrollBar Name="WaveScroller" Margin="50, 0, 50, 0" Orientation="Horizontal" ValueChanged="WaveScrollHandler"/>
         </StackPanel>
-        <ScrollBar Name="WaveScroller" Orientation="Horizontal" ValueChanged="WaveScrollHandler"/>
-
-
-        <Button Name="DeleteButton" Content="DELETE" Click="CutDeleteHandler"/>
-        <Button Name="CutButton" Content="CUT" Click="CutDeleteHandler"/>
-        <Button Content="PASTE" Click="PasteHandler"/>
     </StackPanel>
 </Window>
