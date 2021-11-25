@@ -124,7 +124,11 @@ namespace WaveAnalyzer
             {
                 start = 0;
             }
-            if (end > Channels[0].Length - 1)
+            if (end < 0)
+            {
+                end = 0;
+            }
+            if (end >= Channels[0].Length)
             {
                 end = Channels[0].Length - 1;
             }
@@ -135,6 +139,7 @@ namespace WaveAnalyzer
             for (int i = 0; i < NumChannels; ++i)
             {
                 int extractedSamplesLength = end - start + 1;
+                Trace.WriteLine(extractedSamplesLength);
                 // Extract the samples for this channel in this array.
                 extractedSamples[i] = new short[extractedSamplesLength];
 

@@ -35,7 +35,7 @@ namespace WaveAnalyzer
     {
         private const int DECIMAL_PLACES = 3;
 
-        public static Complex[] DFT(double[] s, int N)
+        public static Complex[] DFT(short[] s, int N)
         {
             Complex[] A = new Complex[N];
 

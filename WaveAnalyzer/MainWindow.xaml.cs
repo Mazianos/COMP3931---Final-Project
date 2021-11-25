@@ -18,6 +18,8 @@ namespace WaveAnalyzer
     {
         private Chart leftChart;
         private Chart rightChart;
+        private Chart dftChart;
+
         private Wave wave;
         private WaveDrawer waveDrawer;
         private WaveZoomer waveZoomer;
@@ -87,18 +89,27 @@ namespace WaveAnalyzer
         {
             if (sender == leftChart)
             {
-                SyncCursors(leftChart.ChartAreas[0].CursorX.Position);
+                var cursorX = leftChart.ChartAreas[0].CursorX;
+                SyncCursors(cursorX.SelectionStart, cursorX.SelectionEnd);
             }
             else
             {
-                SyncCursors(rightChart.ChartAreas[0].CursorX.Position);
+                var cursorX = rightChart.ChartAreas[0].CursorX;
+                SyncCursors(cursorX.SelectionStart, cursorX.SelectionEnd);
             }
         }
 
-        private void SyncCursors(double position)
+        private void SyncCursors(double start, double end)
         {
-            leftChart.ChartAreas[0].CursorX.Position = position;
-            rightChart.ChartAreas[0].CursorX.Position = position;
+            var cursorX = leftChart.ChartAreas[0].CursorX;
+            cursorX.SelectionStart = start;
+            cursorX.SelectionEnd = end;
+            cursorX.Position = end;
+
+            cursorX = rightChart.ChartAreas[0].CursorX;
+            cursorX.SelectionStart = start;
+            cursorX.SelectionEnd = end;
+            cursorX.Position = end;
         }
 
         public unsafe void OpenHandler(object sender, RoutedEventArgs e)
@@ -157,11 +168,13 @@ namespace WaveAnalyzer
         {
             if (!bPlaying)
             {
+                RecordButton.IsEnabled = false;
                 PlayPauseIcon.Source = AppImage.PauseIcon;
                 ModelessDialog.BeginPlay();
             }
             else
             {
+                RecordButton.IsEnabled = true;
                 PlayPauseIcon.Source = AppImage.PlayIcon;
                 ModelessDialog.PausePlay();
             }
@@ -174,6 +187,10 @@ namespace WaveAnalyzer
          */
         public void StopHandler(object sender, RoutedEventArgs e)
         {
+            OpenButton.IsEnabled = true;
+            SaveButton.IsEnabled = true;
+            PlayPauseButton.IsEnabled = true;
+            RecordButton.IsEnabled = true;
             ModelessDialog.EndRecord();
             bRecording = false;
         }
@@ -183,8 +200,12 @@ namespace WaveAnalyzer
          */
         public void RecordHandler(object sender, RoutedEventArgs e)
         {
-            ModelessDialog.BeginRecord();
+            OpenButton.IsEnabled = false;
+            SaveButton.IsEnabled = false;
+            PlayPauseButton.IsEnabled = false;
+            RecordButton.IsEnabled = false;
             bRecording = true;
+            ModelessDialog.BeginRecord();
         }
 
         private void ClearCharts()
@@ -221,7 +242,7 @@ namespace WaveAnalyzer
                 cutSamples = temp;
             }
 
-            SyncCursors(cursor.SelectionStart);
+            SyncCursors(cursor.SelectionStart, cursor.SelectionStart);
 
             ClearCharts();
             RedrawWaves();
@@ -233,6 +254,13 @@ namespace WaveAnalyzer
 
             ClearCharts();
             RedrawWaves();
+        }
+
+        private void DFTHandler(object sender, RoutedEventArgs e)
+        {
+            Complex[] A = Fourier.DFT(wave.Channels[0], 10000);
+
+            Fourier.PrintComplex(A);
         }
     }
 }

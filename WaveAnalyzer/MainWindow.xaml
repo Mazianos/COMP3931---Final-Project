@@ -9,21 +9,21 @@
     <StackPanel>
         <Grid Margin="50, 25, 50, 0">
             <StackPanel Orientation="Horizontal">
-                <Button Click="OpenHandler">
+                <Button Name="OpenButton" Click="OpenHandler">
                     <Image Name="OpenIcon"/>
                 </Button>
-                <Button Click="SaveHandler">
+                <Button Name="SaveButton" Click="SaveHandler">
                     <Image Name="SaveIcon"/>
                 </Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Click="PlayPauseHandler">
+                <Button Name="PlayPauseButton" Click="PlayPauseHandler">
                     <Image Name="PlayPauseIcon"/>
                 </Button>
-                <Button Click="StopHandler">
+                <Button Name="StopButton" Click="StopHandler">
                     <Image Name="StopIcon"/>
                 </Button>
-                <Button Click="RecordHandler">
+                <Button Name="RecordButton" Click="RecordHandler">
                     <Image Name="RecordIcon"/>
                 </Button>
             </StackPanel>
@@ -33,6 +33,8 @@
             <WindowsFormsHost Name="LeftHost" Margin="10, 50, 10, 0"/>
             <WindowsFormsHost Name="RightHost" Margin="10, -10, 10, 0"/>
             <ScrollBar Name="WaveScroller" Margin="50, 0, 50, 0" Orientation="Horizontal" ValueChanged="WaveScrollHandler"/>
+            <WindowsFormsHost Name="DFTHost" Margin="10, 20, 10, 0"/>
+            <Button Content="DFT" Click="DFTHandler"/>
         </StackPanel>
     </StackPanel>
 </Window>
