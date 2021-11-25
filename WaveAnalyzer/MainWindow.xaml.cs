@@ -48,6 +48,7 @@ namespace WaveAnalyzer
 
             ModelessDialog.InitWave();
         }
+
         private void SetIconImages()
         {
             OpenIcon.Source = AppImage.OpenIcon;
@@ -82,7 +83,10 @@ namespace WaveAnalyzer
         private void ChartMouseWheelHandler(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             waveZoomer.HandleZoom(ref leftChart, e.Delta, e.X);
-            waveZoomer.HandleZoom(ref rightChart, e.Delta, e.X);
+            if (!wave.IsMono())
+            {
+                waveZoomer.HandleZoom(ref rightChart, e.Delta, e.X);
+            }
         }
 
         private void ChartSelectionHandler(object sender, CursorEventArgs e)
@@ -258,9 +262,11 @@ namespace WaveAnalyzer
 
         private void DFTHandler(object sender, RoutedEventArgs e)
         {
-            Complex[] A = Fourier.DFT(wave.Channels[0], 10000);
+            Chart chart = ChartCreator.CreateDFTChart();
+            DFTHost.Child = chart;
 
-            Fourier.PrintComplex(A);
+            chart.Series[0].Points.AddXY(1, 2);
+            chart.Series[0].Points.AddXY(2, 1);
         }
     }
 }
