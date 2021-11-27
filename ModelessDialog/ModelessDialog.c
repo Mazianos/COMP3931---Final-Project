@@ -142,10 +142,10 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Open waveform audio for input
 
             waveform.wFormatTag = WAVE_FORMAT_PCM;
-            waveform.nChannels = 2;
+            waveform.nChannels = 1;
             waveform.nSamplesPerSec = 44100;
             waveform.nAvgBytesPerSec = 44100;
-            waveform.nBlockAlign = 4;
+            waveform.nBlockAlign = 2;
             waveform.wBitsPerSample = 16;
             waveform.cbSize = 0;
 

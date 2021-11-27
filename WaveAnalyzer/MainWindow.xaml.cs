@@ -118,6 +118,11 @@ namespace WaveAnalyzer
             cursorX.Position = end;
         }
 
+        private double GetCursorPosition()
+        {
+            return leftChart.ChartAreas[0].CursorX.SelectionEnd + WaveScroller.Value;
+        }
+
         public unsafe void OpenHandler(object sender, RoutedEventArgs e)
         {
             // Opens the open file dialog box.
@@ -170,11 +175,12 @@ namespace WaveAnalyzer
                 RecordButton.IsEnabled = false;
                 PlayPauseIcon.Source = AppImage.PauseIcon;
 
-                byte[] data = wave.GetChannelsInBytes();
+                // Get the wave data in bytes starting at the cursor position.
+                byte[] data = wave.GetChannelsInBytes((int)GetCursorPosition());
 
                 fixed (byte* p = data)
                 {
-                    ModelessDialog.SetWaveData(p, (uint)wave.Channels[0].Length, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
+                    ModelessDialog.SetWaveData(p, (uint)data.Length, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
                 }
 
                 ModelessDialog.BeginPlay();
@@ -192,25 +198,58 @@ namespace WaveAnalyzer
         /**
          * Stops Playing Wave
          */
-        public void StopHandler(object sender, RoutedEventArgs e)
+        public unsafe void StopHandler(object sender, RoutedEventArgs e)
         {
             OpenButton.IsEnabled = true;
             SaveButton.IsEnabled = true;
             PlayPauseButton.IsEnabled = true;
             RecordButton.IsEnabled = true;
-            ModelessDialog.EndRecord();
+
+            PlayPauseIcon.Source = AppImage.PlayIcon;
+
+            if (bPlaying)
+            {
+                ModelessDialog.EndPlay();
+                bPlaying = false;
+            }
+            else if (bRecording)
+            {
+                ModelessDialog.EndRecord();
+
+                int recordedLength = (int)ModelessDialog.GetDWDataLength();
+                byte[] recordedBytes = new byte[recordedLength];
+                Marshal.Copy(ModelessDialog.GetSaveBuffer(), recordedBytes, 0, recordedLength);
+                short[][] recordedSamples = Wave.ExtractSamples(ref recordedBytes, recordedLength / 2, 0, 1);
+
+                if (wave != null)
+                {
+                    wave.InsertSamples(recordedSamples, (int)GetCursorPosition());
+                }
+
+                ClearCharts();
+                RedrawWaves();
+            }
+            
+            if (!bRecording)
+            {
+                // Reset cursor to the beginning of the track.
+                SyncCursors(0, 0);
+                WaveScroller.Value = 0;
+            }
+
             bRecording = false;
         }
 
         /**
          * Start Recording
          */
-        public void RecordHandler(object sender, RoutedEventArgs e)
+        public unsafe void RecordHandler(object sender, RoutedEventArgs e)
         {
             OpenButton.IsEnabled = false;
             SaveButton.IsEnabled = false;
             PlayPauseButton.IsEnabled = false;
             RecordButton.IsEnabled = false;
+
             bRecording = true;
             ModelessDialog.BeginRecord();
         }
@@ -242,7 +281,7 @@ namespace WaveAnalyzer
         private void CutDeleteHandler(object sender, ExecutedRoutedEventArgs e)
         {
             var cursor = leftChart.ChartAreas[0].CursorX;
-            short[][] temp = wave.ExtractSamples((int)(cursor.SelectionStart + WaveScroller.Value), (int)(cursor.SelectionEnd + WaveScroller.Value));
+            short[][] temp = wave.ExtractSamples((int)(cursor.SelectionStart + WaveScroller.Value), (int)GetCursorPosition());
 
             if (e.Command == commands.Cut)
             {
@@ -257,7 +296,7 @@ namespace WaveAnalyzer
 
         private void PasteHandler(object sender, RoutedEventArgs e)
         {
-            wave.InsertSamples(cutSamples, (int)(leftChart.ChartAreas[0].CursorX.SelectionEnd + WaveScroller.Value));
+            wave.InsertSamples(cutSamples, (int)GetCursorPosition());
 
             ClearCharts();
             RedrawWaves();
