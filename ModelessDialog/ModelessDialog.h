@@ -10,9 +10,7 @@ extern SOUND_PROCESSING_API PBYTE GetSaveBuffer();
 
 extern SOUND_PROCESSING_API DWORD GetDWDataLength();
 
-extern SOUND_PROCESSING_API void SetSaveBuffer(PBYTE);
-
-extern SOUND_PROCESSING_API void SetDWDataLength(DWORD);
+extern SOUND_PROCESSING_API void SetWaveData(PBYTE, DWORD, int, int, int, int);
 
 extern SOUND_PROCESSING_API void ReverseMemoryFunct();
 

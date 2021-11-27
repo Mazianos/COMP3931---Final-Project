@@ -40,6 +40,10 @@ static TCHAR        szOpenError[] = TEXT("Error opening waveform audio!");
 static TCHAR        szMemError[] = TEXT("Error allocating memory!");
 static WAVEFORMATEX waveform;
 static DWORD        msgLoop;
+static int numChannels = 1;
+static int sampleRate = 44100;
+static int blockAlign = 2;
+static int bitsPerSample = 16;
 
 BOOL APIENTRY DllMain(HMODULE hModule,
     DWORD  ul_reason_for_call,
@@ -138,11 +142,11 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Open waveform audio for input
 
             waveform.wFormatTag = WAVE_FORMAT_PCM;
-            waveform.nChannels = 1;
-            waveform.nSamplesPerSec = 11025;
-            waveform.nAvgBytesPerSec = 11025;
-            waveform.nBlockAlign = 1;
-            waveform.wBitsPerSample = 8;
+            waveform.nChannels = 2;
+            waveform.nSamplesPerSec = 44100;
+            waveform.nAvgBytesPerSec = 44100;
+            waveform.nBlockAlign = 4;
+            waveform.wBitsPerSample = 16;
             waveform.cbSize = 0;
 
             if (waveInOpen(&hWaveIn, WAVE_MAPPER, &waveform,
@@ -189,11 +193,11 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Open waveform audio for output
 
             waveform.wFormatTag = WAVE_FORMAT_PCM;
-            waveform.nChannels = 1;
-            waveform.nSamplesPerSec = 11025;
-            waveform.nAvgBytesPerSec = 11025;
-            waveform.nBlockAlign = 1;
-            waveform.wBitsPerSample = 8;
+            waveform.nChannels = numChannels;
+            waveform.nSamplesPerSec = sampleRate;
+            waveform.nAvgBytesPerSec = sampleRate;
+            waveform.nBlockAlign = blockAlign;
+            waveform.wBitsPerSample = bitsPerSample;
             waveform.cbSize = 0;
 
             if (waveOutOpen(&hWaveOut, WAVE_MAPPER, &waveform,
@@ -211,13 +215,13 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             if (!bPaused)
             {
                 waveOutPause(hWaveOut);
-                SetDlgItemText(hwnd, IDC_PLAY_PAUSE, TEXT("Resume"));
+                //SetDlgItemText(hwnd, IDC_PLAY_PAUSE, TEXT("Resume"));
                 bPaused = TRUE;
             }
             else
             {
                 waveOutRestart(hWaveOut);
-                SetDlgItemText(hwnd, IDC_PLAY_PAUSE, TEXT("Pause"));
+                //SetDlgItemText(hwnd, IDC_PLAY_PAUSE, TEXT("Pause"));
                 bPaused = FALSE;
             }
             return TRUE;
@@ -249,11 +253,11 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Open waveform audio for fast output
 
             waveform.wFormatTag = WAVE_FORMAT_PCM;
-            waveform.nChannels = 1;
-            waveform.nSamplesPerSec = 22050;
-            waveform.nAvgBytesPerSec = 22050;
-            waveform.nBlockAlign = 1;
-            waveform.wBitsPerSample = 8;
+            waveform.nChannels = numChannels;
+            waveform.nSamplesPerSec = sampleRate * 2;
+            waveform.nAvgBytesPerSec = sampleRate;
+            waveform.nBlockAlign = blockAlign;
+            waveform.wBitsPerSample = bitsPerSample;
             waveform.cbSize = 0;
 
             if (waveOutOpen(&hWaveOut, 0, &waveform, (DWORD)hwnd, 0,
@@ -422,7 +426,6 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
-
 PBYTE GetSaveBuffer() {
     return pSaveBuffer;
 }
@@ -431,12 +434,19 @@ DWORD GetDWDataLength() {
     return dwDataLength;
 }
 
-void SetSaveBuffer(PBYTE buffer) {
-    memcpy(pSaveBuffer, buffer, dwDataLength);
-}
+void SetWaveData(PBYTE buffer, DWORD length, int channels, int sRate, int bAlign, int bPerSample) {
+    dwDataLength = length;
+    numChannels = channels;
+    sampleRate = sRate;
+    blockAlign = bAlign;
+    bitsPerSample = bPerSample;
 
-void SetDWDataLength(DWORD data) {
-    dwDataLength = data;
+    PBYTE newPSaveBuffer = realloc(pSaveBuffer, dwDataLength);
+
+    if (!newPSaveBuffer) exit(ERROR_IPSEC_IKE_OUT_OF_MEMORY);
+
+    memcpy(newPSaveBuffer, buffer, dwDataLength);
+    pSaveBuffer = newPSaveBuffer;
 }
 
 void ReverseMemoryFunct()

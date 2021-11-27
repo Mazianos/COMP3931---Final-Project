@@ -77,8 +77,8 @@ namespace WaveAnalyzer
             axisX.MajorGrid.Enabled = false;
 
             var axisY = area.AxisY;
-            axisY.Minimum = -1;
-            axisY.Maximum = 1;
+            axisY.Minimum = 0;
+            axisY.Maximum = 2;
             //axisY.LabelStyle.Enabled = false;
             axisY.MajorGrid.Enabled = false;
 

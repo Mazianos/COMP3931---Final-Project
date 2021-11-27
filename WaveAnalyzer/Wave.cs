@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace WaveAnalyzer
 {
@@ -16,20 +14,22 @@ namespace WaveAnalyzer
         private int subchunk1Size;
         private short audioFormat;
         public short NumChannels { get; private set; }
-        private int sampleRate;
+        public int SampleRate { get; private set; }
         private int byteRate;
-        private short blockAlign;
-        private short bitsPerSample;
+        public short BlockAlign { get; private set; }
+        public short BitsPerSample { get; private set; }
         private int subchunk2ID;
         public int Subchunk2Size { get; private set; }
         public short[][] Channels { get; private set; }
+
+        public byte[] d;
 
         public Wave(string filePath)
         {
             byte[] data = File.ReadAllBytes(filePath);
 
             InitializeWaveHeader(ref data);
-
+            d = data;
             ExtractSamples(ref data);
         }
 
@@ -67,10 +67,10 @@ namespace WaveAnalyzer
             subchunk1Size = ByteConverter.ToInt32(data, dataIndex + 4);
             audioFormat = ByteConverter.ToInt16(data, dataIndex + 8);
             NumChannels = ByteConverter.ToInt16(data, dataIndex + 10);
-            sampleRate = ByteConverter.ToInt32(data, dataIndex + 12);
+            SampleRate = ByteConverter.ToInt32(data, dataIndex + 12);
             byteRate = ByteConverter.ToInt32(data, dataIndex + 16);
-            blockAlign = ByteConverter.ToInt16(data, dataIndex + 20);
-            bitsPerSample = ByteConverter.ToInt16(data, dataIndex + 22);
+            BlockAlign = ByteConverter.ToInt16(data, dataIndex + 20);
+            BitsPerSample = ByteConverter.ToInt16(data, dataIndex + 22);
             dataIndex += 22;
 
             // Read until it hits "data".
@@ -95,15 +95,32 @@ namespace WaveAnalyzer
                 Channels[i] = new short[samplesPerChannel];
             }
 
-            // Iterate through the samples and push the float values to their respective channel arrays.
+            // Iterate through the samples and push the short values to their respective channel arrays.
             // For mono, samples are two bytes each. For stereo, it is four bytes, first two left, then two right.
             for (int i = 0; i < samplesPerChannel; ++i)
             {
                 for (short j = 0; j < NumChannels; ++j)
                 {
-                    Channels[j][i] = ByteConverter.ToInt16(data, dataIndex + (i * 2 * NumChannels) + (j * NumChannels));
+                    Channels[j][i] = ByteConverter.ToInt16(data, dataIndex + i * 2 * NumChannels + j * NumChannels);
                 }
             }
+        }
+
+        public byte[] GetChannelsInBytes()
+        {
+            byte[] byteData = new byte[Subchunk2Size];
+
+            for (int i = 0; i < Channels[0].Length; ++i)
+            {
+                for (int j = 0; j < NumChannels; ++j)
+                {
+                    byte[] current = BitConverter.GetBytes(Channels[j][i]);
+                    byteData[i * 2 * NumChannels + j * NumChannels] = current[0];
+                    byteData[i * 2 * NumChannels + j * NumChannels + 1] = current[1];
+                }
+            }
+
+            return byteData;
         }
 
         public bool IsMono()

@@ -1,5 +1,5 @@
 is_global = true
-build_property.CsWin32InputMetadataPaths = C:\Users\Mazianos\.nuget\packages\microsoft.windows.sdk.win32metadata\10.2.185-preview\buildTransitive\..\Windows.Win32.winmd
-build_property.CsWin32InputDocPaths = C:\Users\Mazianos\.nuget\packages\microsoft.windows.sdk.win32docs\0.1.6-alpha\buildTransitive\..\apidocs.msgpack
+build_property.CsWin32InputMetadataPaths = C:\Users\Joshua\.nuget\packages\microsoft.windows.sdk.win32metadata\10.2.185-preview\buildTransitive\..\Windows.Win32.winmd
+build_property.CsWin32InputDocPaths = C:\Users\Joshua\.nuget\packages\microsoft.windows.sdk.win32docs\0.1.6-alpha\buildTransitive\..\apidocs.msgpack
 build_property.RootNamespace = WaveAnalyzer
-build_property.ProjectDir = D:\COMP3931\Wave Analyzer\WaveAnalyzer\
+build_property.ProjectDir = C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\

@@ -35,6 +35,7 @@
             <ScrollBar Name="WaveScroller" Margin="50, 0, 50, 0" Orientation="Horizontal" ValueChanged="WaveScrollHandler"/>
             <WindowsFormsHost Name="DFTHost" Margin="10, 20, 10, 0"/>
             <Button Content="DFT" Click="DFTHandler"/>
+            <Button Content="Filter" Click="FilterHandler"/>
         </StackPanel>
     </StackPanel>
 </Window>

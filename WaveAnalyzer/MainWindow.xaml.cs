@@ -33,10 +33,6 @@ namespace WaveAnalyzer
         private short rightMaxSample;
         private short rightMinSample;
 
-        private bool isPlaying;
-        private bool isRecording = false;
-        private WaveSelector currentSelection;
-
         public MainWindow()
         {
             InitializeComponent();
@@ -84,9 +80,10 @@ namespace WaveAnalyzer
             rightChart.SelectionRangeChanging += ChartSelectionHandler;
         }
 
-       
         private void ChartMouseWheelHandler(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+            if (wave == null) return;
+
             waveZoomer.HandleZoom(ref leftChart, e.Delta, e.X);
             if (!wave.IsMono())
             {
@@ -132,20 +129,13 @@ namespace WaveAnalyzer
             // Returns true when a file is opened. Return if not opened.
             if (openFileDialog.ShowDialog() != true) return;
 
+            if (bPlaying)
+            {
+                PlayPauseHandler(null, null);
+            }
+
             // Read the wave file in bytes.
             wave = new Wave(openFileDialog.FileName);
-
-            // God this is ugly af.
-            short[] channel = wave.Channels[0];
-            byte[] dataArr = new byte[channel.Length];
-            Buffer.BlockCopy(channel, 0, dataArr, 0, channel.Length);
-            byte* Pdata;
-            fixed (byte* data = dataArr)
-            {
-                Pdata = data;
-                //ModelessDialog.SetDWDataLength((ulong)wave.Subchunk2Size);
-                //ModelessDialog.SetSaveBuffer(Pdata);
-            }
 
             Trace.WriteLine("Done!");
 
@@ -173,12 +163,20 @@ namespace WaveAnalyzer
         /**
          * Play/Pause Wave
          */
-        public void PlayPauseHandler(object sender, RoutedEventArgs e)
+        public unsafe void PlayPauseHandler(object sender, RoutedEventArgs e)
         {
             if (!bPlaying)
             {
                 RecordButton.IsEnabled = false;
                 PlayPauseIcon.Source = AppImage.PauseIcon;
+
+                byte[] data = wave.GetChannelsInBytes();
+
+                fixed (byte* p = data)
+                {
+                    ModelessDialog.SetWaveData(p, (uint)wave.Channels[0].Length, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
+                }
+
                 ModelessDialog.BeginPlay();
             }
             else
@@ -266,26 +264,55 @@ namespace WaveAnalyzer
         }
 
 
-        private const int SAMPLES_AT_A_TIME = 22050;
+        private const int SAMPLES_AT_A_TIME = 1000;
         private void DFTHandler(object sender, RoutedEventArgs e)
         {
-            Complex[] A = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
+            /*Complex[] A = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
             for (int i = 1; i < wave.Channels[0].Length / SAMPLES_AT_A_TIME; i++)
             {
                 Complex[] A2 = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, i * SAMPLES_AT_A_TIME);
                 for (int j = 0; j < A.Length; j++)
                 {
-                    A[i] += A2[i];
+                    A[j] += A2[j];
                 }
             }
-            Fourier.DivideByN(A, SAMPLES_AT_A_TIME);
+            Fourier.DivideByN(A, SAMPLES_AT_A_TIME);*/
             //Fourier.PrintDoubles(Fourier.GetAmplitudes(A));
-            Fourier.PrintComplex(A);
-            Chart chart = ChartCreator.CreateDFTChart();
-            DFTHost.Child = chart;
+            //Fourier.PrintComplex(A);
 
-            chart.Series[0].Points.AddXY(1, 2);
-            chart.Series[0].Points.AddXY(2, 1);
+
+            dftChart = ChartCreator.CreateDFTChart();
+            DFTHost.Child = dftChart;
+
+
+            Complex[] test = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
+            Fourier.DivideByN(test, SAMPLES_AT_A_TIME);
+
+            double[] amplitudes = Fourier.GetAmplitudes(test);
+
+
+            dftChart.ChartAreas[0].AxisY.Maximum = (int)amplitudes.Max() + 1;
+
+            for (int i = 0; i < amplitudes.Length; ++i)
+            {
+                dftChart.Series[0].Points.AddXY(i, amplitudes[i]);
+            }
+        }
+
+        private void FilterHandler(object sender, RoutedEventArgs e)
+        {
+            var dftCursor = dftChart.ChartAreas[0].CursorX;
+            var sampleCursor = leftChart.ChartAreas[0].CursorX;
+
+            //short[][] samplesToFilter = wave.ExtractSamples((int)sampleCursor.SelectionStart, (int)sampleCursor.SelectionEnd);
+            short[][] samplesToFilter = wave.ExtractSamples(0, 1000);
+
+            Filter.FilterRange((int)dftCursor.SelectionStart, (int)dftCursor.SelectionEnd, samplesToFilter);
+
+            wave.InsertSamples(samplesToFilter, 0);
+
+            ClearCharts();
+            RedrawWaves();
         }
     }
 }

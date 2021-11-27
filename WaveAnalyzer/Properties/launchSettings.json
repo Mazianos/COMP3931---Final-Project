@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WaveAnalyzer": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\COMP3931\Wave Analyzer\x64\Debug\ModelessDialog.dll</FullPath>
+      <FullPath>C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\bin\Debug\netcoreapp3.1\ModelessDialog.dll</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
