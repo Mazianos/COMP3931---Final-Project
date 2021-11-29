@@ -6,6 +6,9 @@ using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Windows.Controls;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace WaveAnalyzer
 {
@@ -19,9 +22,12 @@ namespace WaveAnalyzer
         private WaveDrawer waveDrawer;
         private WaveZoomer waveZoomer;
         private Commands commands;
-        private IntPtr hwnd;
+        private Thread stopListener;
+        private delegate void stopButtonDelegate();
         private bool bRecording;
         private bool bPlaying;
+        private bool bPaused = false;
+        private static bool die;
         private short[][] cutSamples;
         private short leftMinSample;
         private short leftMaxSample;
@@ -40,6 +46,7 @@ namespace WaveAnalyzer
             SetIconImages();
             SetupCommands();
             SetupCharts();
+
 
             ModelessDialog.InitWave();
         }
@@ -129,9 +136,14 @@ namespace WaveAnalyzer
             // Returns true when a file is opened. Return if not opened.
             if (openFileDialog.ShowDialog() != true) return;
 
+            if (stopListener != null)
+            {
+                die = true;
+            }
+
             if (bPlaying)
             {
-                PlayPauseHandler(null, null);
+                StopButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             }
 
             // Read the wave file in bytes.
@@ -180,17 +192,26 @@ namespace WaveAnalyzer
                 {
                     ModelessDialog.SetWaveData(p, (uint)data.Length, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
                 }
-
                 ModelessDialog.BeginPlay();
+                stopListener = new Thread(listen);
+                stopListener.Start();
+                bPlaying = true;
             }
             else
             {
-                RecordButton.IsEnabled = true;
-                PlayPauseIcon.Source = AppImage.PlayIcon;
+                if (!bPaused)
+                {
+                    RecordButton.IsEnabled = true;
+                    PlayPauseIcon.Source = AppImage.PlayIcon;
+                    bPaused = true;
+                } else
+                {
+                    RecordButton.IsEnabled = false;
+                    PlayPauseIcon.Source = AppImage.PauseIcon;
+                    bPaused = false;
+                }
                 ModelessDialog.PausePlay();
             }
-
-            bPlaying = !bPlaying;
         }
 
         /**
@@ -301,7 +322,7 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
-        private const int SAMPLES_AT_A_TIME = 50000;
+        private const int SAMPLES_AT_A_TIME = 5000;
         private void DFTHandler(object sender, RoutedEventArgs e)
         {
             /*Complex[] A = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
@@ -323,7 +344,7 @@ namespace WaveAnalyzer
 
             
             //short[][] deez2 = Windowing.Triangular(wave.Channels);
-            short[][] deez = Windowing.Triangular(wave.Channels);
+            short[][] deez = Windowing.Hann(wave.Channels);
 
             Complex[] test = Fourier.DFT(deez[0], SAMPLES_AT_A_TIME, 10000);
             Fourier.DivideByN(test, SAMPLES_AT_A_TIME);
@@ -352,6 +373,27 @@ namespace WaveAnalyzer
 
             ClearCharts();
             RedrawWaves();
+        }
+
+        //Everything below is not working as intended.
+        // Don't trust this ^
+        private void pressStop()
+        {
+            StopButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }
+
+        private void listen()
+        {
+            while (!die)
+            {
+                die = ModelessDialog.checkStopped();
+                if (die)
+                {
+                    stopButtonDelegate del = new stopButtonDelegate(pressStop);
+                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, del);
+                }
+            }
+            die = false;
         }
     }
 }

@@ -4,6 +4,8 @@ namespace WaveAnalyzer
 {
     public static class Windowing
     {
+        private const short HannMultiplier = 10;
+
         public static short[][] Hann(short[][] constSamples)
         {
             short[][] samples = new short[constSamples.Length][];
@@ -13,7 +15,7 @@ namespace WaveAnalyzer
                 samples[i] = new short[constSamples[i].Length];
                 for (int j = 0; j < samples[i].Length; ++j)
                 {
-                    samples[i][j] = (short)(constSamples[i][j] * (0.5 * (1 - Math.Cos(2 * Math.PI * j / samples[i].Length))));
+                    samples[i][j] = (short)(HannMultiplier * constSamples[i][j] * (0.5 * (1 - Math.Cos(2 * Math.PI * j / samples[i].Length))));
                 }
             }
 

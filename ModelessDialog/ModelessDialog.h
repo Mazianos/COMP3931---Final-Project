@@ -25,3 +25,5 @@ extern SOUND_PROCESSING_API void PausePlay();
 extern SOUND_PROCESSING_API void BeginPlay();
 
 extern SOUND_PROCESSING_API void EndPlay();
+
+extern SOUND_PROCESSING_API BOOL checkStopped();

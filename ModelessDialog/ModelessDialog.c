@@ -40,6 +40,7 @@ static TCHAR        szOpenError[] = TEXT("Error opening waveform audio!");
 static TCHAR        szMemError[] = TEXT("Error allocating memory!");
 static WAVEFORMATEX waveform;
 static DWORD        msgLoop;
+static BOOL         stopped;
 static int numChannels = 1;
 static int sampleRate = 44100;
 static int blockAlign = 2;
@@ -373,6 +374,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     case MM_WOM_DONE:
         waveOutUnprepareHeader(hWaveOut, pWaveHdr1, sizeof(WAVEHDR));
         waveOutClose(hWaveOut);
+        stopped = TRUE;
         return TRUE;
 
     case MM_WOM_CLOSE:
@@ -476,4 +478,8 @@ void BeginPlay() {
 
 void EndPlay() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_PLAY_END, 0), 0);
+}
+
+BOOL checkStopped() {
+    return stopped;
 }
