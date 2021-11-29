@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
-using System.Windows.Interop;
 using System.Windows.Input;
 using System.Windows.Forms.DataVisualization.Charting;
 
@@ -153,11 +148,14 @@ namespace WaveAnalyzer
                 rightMaxSample = waveDrawer.GetMaxSample(wave.Channels[1]);
             }
 
-            WaveScroller.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels - 1000;
-
             // Drawing.
             ClearCharts();
             RedrawWaves();
+        }
+
+        private void ResetScrollbarMax()
+        {
+            WaveScroller.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels - 1000;
         }
 
         private void SaveHandler(object sender, RoutedEventArgs e)
@@ -258,6 +256,7 @@ namespace WaveAnalyzer
         {
             leftChart.Series[0].Points.Clear();
             rightChart.Series[0].Points.Clear();
+            ResetScrollbarMax();
         }
 
         private void RedrawWaves()
@@ -302,8 +301,7 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
-
-        private const int SAMPLES_AT_A_TIME = 1000;
+        private const int SAMPLES_AT_A_TIME = 50000;
         private void DFTHandler(object sender, RoutedEventArgs e)
         {
             /*Complex[] A = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
@@ -323,12 +321,14 @@ namespace WaveAnalyzer
             dftChart = ChartCreator.CreateDFTChart();
             DFTHost.Child = dftChart;
 
+            
+            //short[][] deez2 = Windowing.Triangular(wave.Channels);
+            short[][] deez = Windowing.Triangular(wave.Channels);
 
-            Complex[] test = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
+            Complex[] test = Fourier.DFT(deez[0], SAMPLES_AT_A_TIME, 10000);
             Fourier.DivideByN(test, SAMPLES_AT_A_TIME);
 
             double[] amplitudes = Fourier.GetAmplitudes(test);
-
 
             dftChart.ChartAreas[0].AxisY.Maximum = (int)amplitudes.Max() + 1;
 
@@ -340,15 +340,15 @@ namespace WaveAnalyzer
 
         private void FilterHandler(object sender, RoutedEventArgs e)
         {
-            var dftCursor = dftChart.ChartAreas[0].CursorX;
-            var sampleCursor = leftChart.ChartAreas[0].CursorX;
+            //var dftCursor = dftChart.ChartAreas[0].CursorX;
+            //var sampleCursor = leftChart.ChartAreas[0].CursorX;
 
             //short[][] samplesToFilter = wave.ExtractSamples((int)sampleCursor.SelectionStart, (int)sampleCursor.SelectionEnd);
-            short[][] samplesToFilter = wave.ExtractSamples(0, 1000);
+            short[][] samplesToFilter = wave.ExtractSamples(10000, 30000);
 
-            Filter.FilterRange((int)dftCursor.SelectionStart, (int)dftCursor.SelectionEnd, samplesToFilter);
-
-            wave.InsertSamples(samplesToFilter, 0);
+            //Filter.FilterRange((int)dftCursor.SelectionStart, (int)dftCursor.SelectionEnd, samplesToFilter);
+            Filter.FilterRange(0, 10, wave.SampleRate, samplesToFilter);
+            wave.InsertSamples(samplesToFilter, 10000);
 
             ClearCharts();
             RedrawWaves();

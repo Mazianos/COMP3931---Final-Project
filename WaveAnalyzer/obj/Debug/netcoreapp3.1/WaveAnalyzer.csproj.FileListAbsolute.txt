@@ -39,8 +39,6 @@ C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\Wa
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.genruntimeconfig.cache
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.csproj.AssemblyReference.cache
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\App.baml
-C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.WaveSelector.resources
-C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.csproj.GenerateResource.cache
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\bin\Debug\netcoreapp3.1\System.Windows.Forms.DataVisualization.dll
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\bin\Debug\netcoreapp3.1\System.Data.SqlClient.dll
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\bin\Debug\netcoreapp3.1\runtimes\win-arm64\native\sni.dll

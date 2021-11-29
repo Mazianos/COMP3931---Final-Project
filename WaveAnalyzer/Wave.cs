@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 
 namespace WaveAnalyzer
@@ -159,7 +158,7 @@ namespace WaveAnalyzer
             for (int i = 0; i < NumChannels; ++i)
             {
                 int extractedSamplesLength = end - start + 1;
-                Trace.WriteLine(extractedSamplesLength);
+                
                 // Extract the samples for this channel in this array.
                 extractedSamples[i] = new short[extractedSamplesLength];
 

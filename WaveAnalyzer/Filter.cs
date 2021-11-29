@@ -1,35 +1,44 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 
 namespace WaveAnalyzer
 {
     public static class Filter
     {
-        public static void FilterRange(int binStart, int binEnd, short[][] samplesToFilter)
+        public static void FilterRange(int hzStart, int hzEnd, int sampleRate, short[][] samplesToFilter)
         {
             int samplesLength = samplesToFilter[0].Length;
+            int binStart = samplesLength * hzStart / sampleRate;
+            int binEnd = samplesLength * hzEnd / sampleRate;
+            Complex[] A = CreateWeights(binStart, binEnd, sampleRate);
+            double[] weights = Fourier.InverseDFT(A, samplesLength);
 
-            Trace.WriteLine(samplesToFilter[0][0]);
-
-            double[] weights = Fourier.InverseDFT(CreateWeights(binStart, binEnd, samplesLength), samplesLength);
-
-            Convolution(samplesToFilter[0], weights, samplesLength);
-
-            Trace.WriteLine(samplesToFilter[0][0]);
+            for (int i = 0; i < samplesToFilter.Length; ++i)
+            {
+                Array.Resize(ref samplesToFilter[i], samplesLength + weights.Length);
+                Convolution(samplesToFilter[i], weights);
+                Array.Resize(ref samplesToFilter[i], samplesLength);
+            }
+            
         }
 
-        public static Complex[] CreateWeights(int binStart, int binEnd, int samplesLength)
+        public static Complex[] CreateWeights(int binStart, int binEnd, int sampleRate)
         {
-            Complex[] weights = new Complex[samplesLength];
+            Complex[] weights = new Complex[sampleRate];
+
+            weights[0].real = 1;
+
+            // If the starting bin is 0, increment the starting bin because 0 is the DC component.
+            if (binStart == 0)
+            {
+                ++binStart;
+            }
 
             for (int i = binStart; i < binEnd; ++i)
             {
                 weights[i].real = 1;
             }
 
-            for (int i = samplesLength - binStart; i > samplesLength - binEnd; --i)
+            for (int i = sampleRate - binStart; i > sampleRate - binEnd; --i)
             {
                 weights[i].real = 1;
             }
@@ -42,15 +51,16 @@ namespace WaveAnalyzer
             Array.Resize(ref s, s.Length + N - 1);
         }
 
-        public static void Convolution(short[] s, double[] weights, int N)
+        public static void Convolution(short[] s, double[] weights)
         {
-            for (int i = 0; i < s.Length - N + 1; ++i)
+            for (int i = 0; i < s.Length - weights.Length; ++i)
             {
                 double sum = 0;
-                for (int j = 0; j < N; ++j)
+                for (int j = 0; j < weights.Length; ++j)
                 {
                     sum += s[i + j] * weights[j];
                 }
+                sum /= weights.Length;
                 s[i] = (short)Math.Round(sum);
             }
         }
