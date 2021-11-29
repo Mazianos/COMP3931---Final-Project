@@ -483,3 +483,7 @@ void EndPlay() {
 BOOL checkStopped() {
     return stopped;
 }
+
+void setStopped(BOOL stop) {
+    stopped = stop;
+}

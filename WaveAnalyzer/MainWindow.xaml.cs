@@ -32,7 +32,7 @@ namespace WaveAnalyzer
         private bool bRecording;
         private bool bPlaying;
         private bool bPaused = false;
-        private static bool die;
+        private static bool die = false;
         private short[][] cutSamples;
         private short leftMinSample;
         private short leftMaxSample;
@@ -145,7 +145,6 @@ namespace WaveAnalyzer
             {
                 die = true;
             }
-            stopListener = new Thread(listen);
 
             if (bPlaying)
             {
@@ -196,6 +195,8 @@ namespace WaveAnalyzer
                     ModelessDialog.SetWaveData(p, (uint)data.Length, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
                 }
                 ModelessDialog.BeginPlay();
+                die = false;
+                stopListener = new Thread(listen);
                 stopListener.Start();
                 bPlaying = true;
             }
@@ -375,7 +376,7 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
-        //Everything below is not working as intended.
+
         private void pressStop()
         {
             StopButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
@@ -385,15 +386,16 @@ namespace WaveAnalyzer
         {
             while (!die)
             {
-                Trace.WriteLine(die);
                 die = ModelessDialog.checkStopped();
                 if (die)
                 {
                     stopButtonDelegate del = new stopButtonDelegate(pressStop);
-                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, del);
+                    Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, del);
                 }
             }
             die = false;
+            ModelessDialog.setStopped(false);
+            return;
         }
     }
 }
