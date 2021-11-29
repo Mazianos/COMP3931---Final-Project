@@ -11,6 +11,9 @@ using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Windows.Input;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Windows.Controls;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace WaveAnalyzer
 {
@@ -24,9 +27,12 @@ namespace WaveAnalyzer
         private WaveDrawer waveDrawer;
         private WaveZoomer waveZoomer;
         private Commands commands;
-        private IntPtr hwnd;
+        private Thread stopListener;
+        private delegate void stopButtonDelegate();
         private bool bRecording;
         private bool bPlaying;
+        private bool bPaused = false;
+        private static bool die;
         private short[][] cutSamples;
         private short leftMinSample;
         private short leftMaxSample;
@@ -45,6 +51,7 @@ namespace WaveAnalyzer
             SetIconImages();
             SetupCommands();
             SetupCharts();
+
 
             ModelessDialog.InitWave();
         }
@@ -134,9 +141,15 @@ namespace WaveAnalyzer
             // Returns true when a file is opened. Return if not opened.
             if (openFileDialog.ShowDialog() != true) return;
 
+            if (stopListener != null)
+            {
+                die = true;
+            }
+            stopListener = new Thread(listen);
+
             if (bPlaying)
             {
-                PlayPauseHandler(null, null);
+                StopButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             }
 
             // Read the wave file in bytes.
@@ -182,17 +195,25 @@ namespace WaveAnalyzer
                 {
                     ModelessDialog.SetWaveData(p, (uint)data.Length, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
                 }
-
                 ModelessDialog.BeginPlay();
+                stopListener.Start();
+                bPlaying = true;
             }
             else
             {
-                RecordButton.IsEnabled = true;
-                PlayPauseIcon.Source = AppImage.PlayIcon;
+                if (!bPaused)
+                {
+                    RecordButton.IsEnabled = true;
+                    PlayPauseIcon.Source = AppImage.PlayIcon;
+                    bPaused = true;
+                } else
+                {
+                    RecordButton.IsEnabled = false;
+                    PlayPauseIcon.Source = AppImage.PauseIcon;
+                    bPaused = false;
+                }
                 ModelessDialog.PausePlay();
             }
-
-            bPlaying = !bPlaying;
         }
 
         /**
@@ -352,6 +373,27 @@ namespace WaveAnalyzer
 
             ClearCharts();
             RedrawWaves();
+        }
+
+        //Everything below is not working as intended.
+        private void pressStop()
+        {
+            StopButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        }
+
+        private void listen()
+        {
+            while (!die)
+            {
+                Trace.WriteLine(die);
+                die = ModelessDialog.checkStopped();
+                if (die)
+                {
+                    stopButtonDelegate del = new stopButtonDelegate(pressStop);
+                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, del);
+                }
+            }
+            die = false;
         }
     }
 }

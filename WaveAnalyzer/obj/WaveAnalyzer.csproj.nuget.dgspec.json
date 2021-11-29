@@ -1,20 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj": {}
+    "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj": {
+    "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj",
+        "projectUniqueName": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj",
         "projectName": "WaveAnalyzer",
-        "projectPath": "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj",
-        "packagesPath": "C:\\Users\\Joshua\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\obj\\",
+        "projectPath": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj",
+        "packagesPath": "C:\\Users\\Mazianos\\.nuget\\packages\\",
+        "outputPath": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Joshua\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Mazianos\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -69,6 +74,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[3.1.19, 3.1.19]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
@@ -77,7 +88,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.402\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.401\\RuntimeIdentifierGraph.json"
         }
       }
     }

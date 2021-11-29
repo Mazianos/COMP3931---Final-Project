@@ -14,5 +14,6 @@ namespace WaveAnalyzer
         [DllImport("ModelessDialog.dll")] public static extern void BeginPlay();
         [DllImport("ModelessDialog.dll")] public static extern void PausePlay();
         [DllImport("ModelessDialog.dll")] public static extern void EndPlay();
+        [DllImport("ModelessDialog.dll")] public static extern bool checkStopped();
     }
 }

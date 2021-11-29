@@ -1,10 +1,11 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(499,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(499,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
   ModelessDialog.c
-C:\Users\Joshua\COMP3931---Final-Project\ModelessDialog\ModelessDialog.c(69,15): warning C4133: 'function': incompatible types - from 'BOOL (__cdecl *)(HWND,UINT,WPARAM,LPARAM)' to 'DLGPROC'
-C:\Users\Joshua\COMP3931---Final-Project\ModelessDialog\ModelessDialog.c(70,19): warning C4047: '==': 'int' differs in levels of indirection from 'HWND'
-C:\Users\Joshua\COMP3931---Final-Project\ModelessDialog\ModelessDialog.c(77,49): warning C4047: 'function': 'DWORD' differs in levels of indirection from 'void *'
-C:\Users\Joshua\COMP3931---Final-Project\ModelessDialog\ModelessDialog.c(77,45): warning C4024: 'CreateThread': different types for formal and actual parameter 5
-C:\Users\Joshua\COMP3931---Final-Project\ModelessDialog\ModelessDialog.c(153,28): warning C4311: 'type cast': pointer truncation from 'HWND' to 'DWORD'
-C:\Users\Joshua\COMP3931---Final-Project\ModelessDialog\ModelessDialog.c(204,28): warning C4311: 'type cast': pointer truncation from 'HWND' to 'DWORD'
-C:\Users\Joshua\COMP3931---Final-Project\ModelessDialog\ModelessDialog.c(263,65): warning C4311: 'type cast': pointer truncation from 'HWND' to 'DWORD'
-  ModelessDialog.vcxproj -> C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\bin\Debug\netcoreapp3.1\ModelessDialog.dll
+D:\COMP3931\Wave Analyzer\ModelessDialog\ModelessDialog.c(70,15): warning C4133: 'function': incompatible types - from 'BOOL (__cdecl *)(HWND,UINT,WPARAM,LPARAM)' to 'DLGPROC'
+D:\COMP3931\Wave Analyzer\ModelessDialog\ModelessDialog.c(71,19): warning C4047: '==': 'int' differs in levels of indirection from 'HWND'
+D:\COMP3931\Wave Analyzer\ModelessDialog\ModelessDialog.c(78,49): warning C4047: 'function': 'DWORD' differs in levels of indirection from 'void *'
+D:\COMP3931\Wave Analyzer\ModelessDialog\ModelessDialog.c(78,45): warning C4024: 'CreateThread': different types for formal and actual parameter 5
+D:\COMP3931\Wave Analyzer\ModelessDialog\ModelessDialog.c(154,28): warning C4311: 'type cast': pointer truncation from 'HWND' to 'DWORD'
+D:\COMP3931\Wave Analyzer\ModelessDialog\ModelessDialog.c(205,28): warning C4311: 'type cast': pointer truncation from 'HWND' to 'DWORD'
+D:\COMP3931\Wave Analyzer\ModelessDialog\ModelessDialog.c(264,65): warning C4311: 'type cast': pointer truncation from 'HWND' to 'DWORD'
+     Creating library D:\COMP3931\Wave Analyzer\ModelessDialog\WaveAnalyzer\bin\Debug\netcoreapp3.1\ModelessDialog.lib and object D:\COMP3931\Wave Analyzer\ModelessDialog\WaveAnalyzer\bin\Debug\netcoreapp3.1\ModelessDialog.exp
+  ModelessDialog.vcxproj -> D:\COMP3931\Wave Analyzer\ModelessDialog\WaveAnalyzer\bin\Debug\netcoreapp3.1\ModelessDialog.dll
