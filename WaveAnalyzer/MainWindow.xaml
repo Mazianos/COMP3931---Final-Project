@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Wave Analyzer" Height="720" Width="1280">
     <StackPanel>
-        <Grid Margin="50, 25, 50, 0">
+        <Grid Margin="50, 25, 50, 25">
             <StackPanel Orientation="Horizontal">
                 <Button Name="OpenButton" Click="OpenHandler">
                     <Image Name="OpenIcon"/>
@@ -15,6 +15,21 @@
                 <Button Name="SaveButton" Click="SaveHandler">
                     <Image Name="SaveIcon"/>
                 </Button>
+                <Canvas Margin="50, 0, 0, 0">
+                    <Expander>
+                        <Expander.Header>
+                            <BulletDecorator>
+                                <BulletDecorator.Bullet>
+                                    <Image Name="DFTIcon"/>
+                                </BulletDecorator.Bullet>
+                            </BulletDecorator>
+                        </Expander.Header>
+                        <StackPanel Background="#EEEEEE">
+                            <Button Content="Hannigrerng"/>
+                            <Button Content="Traignalluate"/>
+                        </StackPanel>
+                    </Expander>
+                </Canvas>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Name="PlayPauseButton" Click="PlayPauseHandler">
@@ -27,14 +42,19 @@
                     <Image Name="RecordIcon"/>
                 </Button>
             </StackPanel>
-            <Slider Style="{DynamicResource VolumeSlider}" Maximum="100" Width="250" Value="50" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Slider Style="{DynamicResource VolumeSlider}" Maximum="100" Width="250" Value="50" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                <Button Margin="50, 0, 0, 0" Name="ClearButton" Click="ClearHandler">
+                    <Image Name="ClearIcon"/>
+                </Button>
+            </StackPanel>
         </Grid>
         <Grid Margin="0, 50, 0, 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <ScrollBar Grid.Column="0" Minimum="0" Maximum="0" Margin="50, 10, 10, 50" Width="50" Name="ScalerBar" ValueChanged="ScalerHandler"/>
+            <ScrollBar Grid.Column="0" Minimum="0" Maximum="0" Margin="10, 10, 10, 70" Width="50" Name="ScalerBar" ValueChanged="ScalerHandler"/>
             <StackPanel Grid.Column="1" Margin="10, 0, 0, 0" Name="HostPanel">
                 <WindowsFormsHost Name="LeftHost" Margin="0, 40, 10, 0"/>
                 <WindowsFormsHost Name="RightHost" Margin="0, -10, 10, 0"/>

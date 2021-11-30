@@ -56,6 +56,8 @@ namespace WaveAnalyzer
             PlayPauseIcon.Source = AppImage.PlayIcon;
             StopIcon.Source = AppImage.StopIcon;
             RecordIcon.Source = AppImage.RecordIcon;
+            ClearIcon.Source = AppImage.ClearIcon;
+            DFTIcon.Source = AppImage.DFTIcon;
         }
 
         private void SetupCommands()
@@ -142,8 +144,8 @@ namespace WaveAnalyzer
             WaveScroller.Value = WaveScroller.Minimum;
             ScalerBar.Value = ScalerBar.Minimum;
 
-            ResetScalerMax();
-            ResetScrollerMax();
+            UpdateScalerMax();
+            UpdateScrollerMax();
             UpdateChartHeights();
 
             // Drawing.
@@ -151,7 +153,7 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
-        private void ResetScalerMax()
+        private void UpdateScalerMax()
         {
             ScalerBar.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels;
         }
@@ -171,7 +173,7 @@ namespace WaveAnalyzer
             axisY.Maximum = waveDrawer.GetMaxSample(wave.Channels[1]) + WaveHeightPadding;
         }
 
-        private void ResetScrollerMax()
+        private void UpdateScrollerMax()
         {
             if (wave == null || leftChart == null || WaveScroller == null || ScalerBar == null) return;
             
@@ -181,8 +183,6 @@ namespace WaveAnalyzer
             {
                 WaveScroller.Maximum = 0;
             }
-
-            Trace.WriteLine("Called! with value" + WaveScroller.Maximum);
         }
 
         private void SaveHandler(object sender, RoutedEventArgs e)
@@ -254,8 +254,8 @@ namespace WaveAnalyzer
                     wave.InsertSamples(recordedSamples, (int)GetCursorPosition());
                 }
 
-                ResetScalerMax();
-                ResetScrollerMax();
+                UpdateScalerMax();
+                UpdateScrollerMax();
                 UpdateChartHeights();
                 ClearCharts();
                 RedrawWaves();
@@ -333,17 +333,19 @@ namespace WaveAnalyzer
             }
 
             SyncCursors(cursor.SelectionStart, cursor.SelectionStart);
-            ResetScalerMax();
-            ResetScrollerMax();
+            UpdateScalerMax();
+            UpdateScrollerMax();
             ClearCharts();
             RedrawWaves();
         }
 
-        public void ClearData()
+        public void ClearHandler(object sender, RoutedEventArgs e)
         {
             wave = new Wave();
 
-            
+            UpdateScalerMax();
+            UpdateScrollerMax();
+            ClearCharts();
         }
 
         private void ScaleCharts(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -354,8 +356,8 @@ namespace WaveAnalyzer
         private void PasteHandler(object sender, RoutedEventArgs e)
         {
             wave.InsertSamples(cutSamples, (int)GetCursorPosition());
-            ResetScalerMax();
-            ResetScrollerMax();
+            UpdateScalerMax();
+            UpdateScrollerMax();
             ClearCharts();
             RedrawWaves();
         }
@@ -435,9 +437,14 @@ namespace WaveAnalyzer
 
         private void ScalerHandler(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            ResetScrollerMax();
+            UpdateScrollerMax();
             ClearCharts();
             RedrawWaves();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

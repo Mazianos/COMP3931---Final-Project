@@ -67,7 +67,7 @@ namespace WaveAnalyzer
 
             for (short i = 0; i < NumChannels; ++i)
             {
-                channels[i] = new short[5];
+                channels[i] = new short[0];
             }
 
             Channels = channels;
