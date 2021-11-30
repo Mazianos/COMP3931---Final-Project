@@ -1,14 +1,13 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
-using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Controls;
 using System.Threading;
 using System.Windows.Threading;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WaveAnalyzer
 {
@@ -338,7 +337,7 @@ namespace WaveAnalyzer
             DFTHost.Child = dftChart;
 
             
-            //short[][] deez2 = Windowing.Triangular(wave.Channels);
+            //short[][] deez = Windowing.Triangular(wave.Channels);
             short[][] deez = Windowing.Hann(wave.Channels);
 
             Complex[] test = Fourier.DFT(deez[0], SAMPLES_AT_A_TIME, 10000);

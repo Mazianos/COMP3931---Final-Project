@@ -31,7 +31,7 @@ namespace WaveAnalyzer
                 samples[i] = new short[constSamples[i].Length];
                 for (int j = 0; j < samples[i].Length; ++j)
                 {
-                    samples[i][j] = (short)(constSamples[i][j] * (1 - (j - samples[i].Length / 2) / samples[i].Length / 2));
+                    samples[i][j] = (short)(constSamples[i][j] * (1 - (j - samples[i].Length / 2.0) / (samples[i].Length / 2)));
                 }
             }
 
