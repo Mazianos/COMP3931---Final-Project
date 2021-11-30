@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using Microsoft.Win32;
@@ -160,7 +159,7 @@ namespace WaveAnalyzer
 
         private void SaveHandler(object sender, RoutedEventArgs e)
         {
-
+            wave.Save();
         }
 
         /**
