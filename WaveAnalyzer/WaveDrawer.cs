@@ -4,20 +4,11 @@ namespace WaveAnalyzer
 {
     class WaveDrawer
     {
-        public void DrawWave(short[] samples, ref Chart chart, int offset, double windowWidth)
+        public void DrawWave(short[] samples, ref Chart chart, int offset, double windowWidth, int incrementer)
         {
-            short minSample = GetMinSample(samples);
-            short maxSample = GetMaxSample(samples);
-            // Used for clamping the value of each sample to between 0 and 1.
-            float denom = maxSample - minSample;
-            if (denom == 0)
+            for (int i = 0; i + offset < samples.Length && i < windowWidth; i += incrementer)
             {
-                ++denom;
-            }
-
-            for (int i = 0; i + offset < samples.Length && i < windowWidth; ++i)
-            {
-                chart.Series[0].Points.AddXY(i, (samples[i + offset] - minSample) / denom * 1.8 - 0.9);
+                chart.Series[0].Points.AddXY(i, samples[i + offset]);
             }
         }
 

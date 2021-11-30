@@ -29,13 +29,20 @@
             </StackPanel>
             <Slider Style="{DynamicResource VolumeSlider}" Maximum="100" Width="250" Value="50" HorizontalAlignment="Right" VerticalAlignment="Center"/>
         </Grid>
-        <StackPanel>
-            <WindowsFormsHost Name="LeftHost" Margin="10, 50, 10, 0"/>
-            <WindowsFormsHost Name="RightHost" Margin="10, -10, 10, 0"/>
-            <ScrollBar Name="WaveScroller" Margin="50, 0, 50, 0" Orientation="Horizontal" ValueChanged="WaveScrollHandler"/>
-            <WindowsFormsHost Name="DFTHost" Margin="10, 20, 10, 0"/>
-            <Button Content="DFT" Click="DFTHandler"/>
-            <Button Content="Filter" Click="FilterHandler"/>
-        </StackPanel>
+        <Grid Margin="0, 50, 0, 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <ScrollBar Grid.Column="0" Minimum="0" Maximum="0" Margin="50, 10, 10, 50" Width="50" Name="ScalerBar" ValueChanged="ScalerHandler"/>
+            <StackPanel Grid.Column="1" Margin="10, 0, 0, 0" Name="HostPanel">
+                <WindowsFormsHost Name="LeftHost" Margin="0, 40, 10, 0"/>
+                <WindowsFormsHost Name="RightHost" Margin="0, -10, 10, 0"/>
+                <ScrollBar Minimum="0" Maximum="0" Name="WaveScroller" Margin="40, 0, 50, 0" Orientation="Horizontal" Height="50" ValueChanged="WaveScrollHandler"/>
+                <WindowsFormsHost Name="DFTHost" Margin="0, 20, 10, 0"/>
+                <Button Content="DFT" Click="DFTHandler"/>
+                <Button Content="Filter" Click="FilterHandler"/>
+            </StackPanel>
+        </Grid>
     </StackPanel>
 </Window>

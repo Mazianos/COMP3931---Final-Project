@@ -81,7 +81,7 @@ namespace WaveAnalyzer
 
             // Initialize the channels 2D array where each row is a channel and every column is a sample.
             int samplesPerChannel = Subchunk2Size / 2 / NumChannels;
-            Channels = ExtractSamples(ref data, samplesPerChannel, dataIndex, NumChannels);
+            Channels = GetChannelsFromBytes(ref data, samplesPerChannel, dataIndex, NumChannels);
         }
 
         private void InitializeWaveHeader(ref byte[] data)
@@ -161,7 +161,7 @@ namespace WaveAnalyzer
         {
             byte[] newFileBytes = new byte[Subchunk2Size + DefaultHeaderLength];
             Array.Copy(ConstructWaveHeader(), newFileBytes, DefaultHeaderLength);
-            Array.Copy(GetChannelsInBytes(0), 0, newFileBytes, DefaultHeaderLength, Subchunk2Size);
+            Array.Copy(GetBytesFromChannels(0), 0, newFileBytes, DefaultHeaderLength, Subchunk2Size);
 
             SaveFileDialog saveFileDialog = new SaveFileDialog();
 
@@ -171,7 +171,7 @@ namespace WaveAnalyzer
             }
         }
 
-        public static short[][] ExtractSamples(ref byte[] data, int samplesPerChannel, int dataStart, int numChannels)
+        public static short[][] GetChannelsFromBytes(ref byte[] data, int samplesPerChannel, int dataStart, int numChannels)
         {
             short[][] channels = new short[numChannels][];
 
@@ -193,7 +193,7 @@ namespace WaveAnalyzer
             return channels;
         }
 
-        public byte[] GetChannelsInBytes(int startingSample)
+        public byte[] GetBytesFromChannels(int startingSample)
         {
             int start = startingSample < 0 ? 0 : startingSample;
 
@@ -217,10 +217,10 @@ namespace WaveAnalyzer
             return Channels.Length == 1;
         }
 
-        public short[][] ExtractSamples(int firstIndex, int secondIndex)
+        public short[][] ExtractSamples(int firstIndex, int secondIndex, bool permanentlyModify)
         {
-            int start = firstIndex < secondIndex ? firstIndex : secondIndex;
-            int end = firstIndex < secondIndex ? secondIndex : firstIndex;
+            int start = Math.Min(firstIndex, secondIndex);
+            int end = Math.Max(firstIndex, secondIndex);
 
             if (Channels[0].Length == 0)
             {
@@ -248,20 +248,23 @@ namespace WaveAnalyzer
                 
                 // Extract the samples for this channel in this array.
                 extractedSamples[i] = new short[extractedSamplesLength];
-
-                // Holds the remaining samples in the channel, after the specified samples are extracted.
-                short[] newChannel = new short[Channels[i].Length - extractedSamplesLength];
                 
-                // Put the first half of the unextracted samples from the original channel to the new channel.
-                for (int j = 0; j < start; ++j)
-                {
-                    newChannel[j] = Channels[i][j];
-                }
-
                 // Extracted the samples from the original channel to the new array.
                 for (int j = 0; j < extractedSamplesLength; ++j)
                 {
                     extractedSamples[i][j] = Channels[i][start + j];
+                }
+
+                // Continue if not permanently modifying (copy, not cut).
+                if (!permanentlyModify) continue;
+
+                // Holds the remaining samples in the channel, after the specified samples are extracted.
+                short[] newChannel = new short[Channels[i].Length - extractedSamplesLength];
+
+                // Put the first half of the unextracted samples from the original channel to the new channel.
+                for (int j = 0; j < start; ++j)
+                {
+                    newChannel[j] = Channels[i][j];
                 }
 
                 // Put the second half of the unextracted samples from the original channel to the new channel.
@@ -272,6 +275,8 @@ namespace WaveAnalyzer
 
                 Channels[i] = newChannel;
             }
+
+            Subchunk2Size = Channels[0].Length * 2 * NumChannels;
 
             return extractedSamples;
         }
