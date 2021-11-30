@@ -28,6 +28,10 @@ namespace WaveAnalyzer
         private bool bPaused = false;
         private static bool die = false;
         private short[][] cutSamples;
+        private const int WaveHeightPadding = 1000;
+        private const float IncrementerMultiplier = 0.001f;
+        private const float ScrollIntensityMultiplier = 0.0005f;
+        private int scrollMultiplier = 1;
 
         public MainWindow()
         {
@@ -43,7 +47,6 @@ namespace WaveAnalyzer
             SetupCommands();
             SetupCharts();
 
-
             ModelessDialog.InitWave();
         }
 
@@ -54,13 +57,16 @@ namespace WaveAnalyzer
             PlayPauseIcon.Source = AppImage.PlayIcon;
             StopIcon.Source = AppImage.StopIcon;
             RecordIcon.Source = AppImage.RecordIcon;
+            ClearIcon.Source = AppImage.ClearIcon;
+            DFTIcon.Source = AppImage.DFTIcon;
         }
 
         private void SetupCommands()
         {
-            CommandBindings.Add(new CommandBinding(commands.Cut, CutDeleteHandler));
+            CommandBindings.Add(new CommandBinding(commands.Cut, CutCopyDeleteHandler));
             CommandBindings.Add(new CommandBinding(commands.Paste, PasteHandler));
-            CommandBindings.Add(new CommandBinding(commands.Delete, CutDeleteHandler));
+            CommandBindings.Add(new CommandBinding(commands.Delete, CutCopyDeleteHandler));
+            CommandBindings.Add(new CommandBinding(commands.Copy, CutCopyDeleteHandler));
         }
 
         private void SetupCharts()
@@ -71,22 +77,11 @@ namespace WaveAnalyzer
             LeftHost.Child = leftChart;
             RightHost.Child = rightChart;
 
-            leftChart.MouseWheel += ChartMouseWheelHandler;
-            rightChart.MouseWheel += ChartMouseWheelHandler;
-
             leftChart.SelectionRangeChanging += ChartSelectionHandler;
             rightChart.SelectionRangeChanging += ChartSelectionHandler;
-        }
 
-        private void ChartMouseWheelHandler(object sender, System.Windows.Forms.MouseEventArgs e)
-        {
-            if (wave == null) return;
-
-            waveZoomer.HandleZoom(ref leftChart, e.Delta, e.X);
-            if (!wave.IsMono())
-            {
-                waveZoomer.HandleZoom(ref rightChart, e.Delta, e.X);
-            }
+            leftChart.MouseWheel += ScaleCharts;
+            rightChart.MouseWheel += ScaleCharts;
         }
 
         private void ChartSelectionHandler(object sender, CursorEventArgs e)
@@ -147,19 +142,61 @@ namespace WaveAnalyzer
 
             Trace.WriteLine("Done!");
 
+            WaveScroller.Value = WaveScroller.Minimum;
+            ScalerBar.Value = ScalerBar.Minimum;
+
+            UpdateScalerMax();
+            UpdateScrollerMax();
+            UpdateChartHeights();
+
             // Drawing.
             ClearCharts();
             RedrawWaves();
         }
 
-        private void ResetScrollbarMax()
+        private void UpdateScalerMax()
         {
-            WaveScroller.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels - 1000;
+            if (wave == null) return;
+
+            ScalerBar.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels;
+            scrollMultiplier = (int)(wave.Channels[0].Length * ScrollIntensityMultiplier);
+        }
+
+        private void UpdateChartHeights()
+        {
+            if (leftChart == null) return;
+
+            var axisY = leftChart.ChartAreas[0].AxisY;
+            axisY.Minimum = waveDrawer.GetMinSample(wave.Channels[0]) - WaveHeightPadding;
+            axisY.Maximum = waveDrawer.GetMaxSample(wave.Channels[0]) + WaveHeightPadding;
+
+            if (wave.IsMono()) return;
+
+            axisY = rightChart.ChartAreas[0].AxisY;
+            axisY.Minimum = waveDrawer.GetMinSample(wave.Channels[1]) - WaveHeightPadding;
+            axisY.Maximum = waveDrawer.GetMaxSample(wave.Channels[1]) + WaveHeightPadding;
+        }
+
+        private void UpdateScrollerMax()
+        {
+            if (wave == null || leftChart == null || WaveScroller == null || ScalerBar == null) return;
+            
+            WaveScroller.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels - leftChart.Width - ScalerBar.Value;
+
+            if (WaveScroller.Maximum < 0)
+            {
+                WaveScroller.Maximum = 0;
+            }
         }
 
         private void SaveHandler(object sender, RoutedEventArgs e)
         {
+            wave.Save();
+        }
 
+        private void MoveCursorWhilePlaying()
+        {
+            
         }
 
         /**
@@ -173,7 +210,7 @@ namespace WaveAnalyzer
                 PlayPauseIcon.Source = AppImage.PauseIcon;
 
                 // Get the wave data in bytes starting at the cursor position.
-                byte[] data = wave.GetChannelsInBytes((int)GetCursorPosition());
+                byte[] data = wave.GetBytesFromChannels((int)GetCursorPosition());
 
                 fixed (byte* p = data)
                 {
@@ -187,17 +224,10 @@ namespace WaveAnalyzer
             }
             else
             {
-                if (!bPaused)
-                {
-                    RecordButton.IsEnabled = true;
-                    PlayPauseIcon.Source = AppImage.PlayIcon;
-                    bPaused = true;
-                } else
-                {
-                    RecordButton.IsEnabled = false;
-                    PlayPauseIcon.Source = AppImage.PauseIcon;
-                    bPaused = false;
-                }
+                PlayPauseIcon.Source = bPaused ? AppImage.PlayIcon : AppImage.PauseIcon;
+                bPaused = !bPaused;
+                RecordButton.IsEnabled = !RecordButton.IsEnabled;
+
                 ModelessDialog.PausePlay();
             }
         }
@@ -226,13 +256,16 @@ namespace WaveAnalyzer
                 int recordedLength = (int)ModelessDialog.GetDWDataLength();
                 byte[] recordedBytes = new byte[recordedLength];
                 Marshal.Copy(ModelessDialog.GetSaveBuffer(), recordedBytes, 0, recordedLength);
-                short[][] recordedSamples = Wave.ExtractSamples(ref recordedBytes, recordedLength / 2, 0, 1);
+                short[][] recordedSamples = Wave.GetChannelsFromBytes(ref recordedBytes, recordedLength / 2, 0, 1);
 
                 if (wave != null)
                 {
                     wave.InsertSamples(recordedSamples, (int)GetCursorPosition());
                 }
 
+                UpdateScalerMax();
+                UpdateScrollerMax();
+                UpdateChartHeights();
                 ClearCharts();
                 RedrawWaves();
             }
@@ -269,21 +302,24 @@ namespace WaveAnalyzer
 
         private void ClearCharts()
         {
+            if (leftChart == null) return;
             leftChart.Series[0].Points.Clear();
+
+            if (rightChart == null) return;
             rightChart.Series[0].Points.Clear();
-            ResetScrollbarMax();
         }
 
         private void RedrawWaves()
         {
-            if (wave != null)
-            {
-                waveDrawer.DrawWave(wave.Channels[0], ref leftChart, (int)WaveScroller.Value, leftChart.Width);
-                if (!wave.IsMono())
-                {
-                    waveDrawer.DrawWave(wave.Channels[1], ref rightChart, (int)WaveScroller.Value, rightChart.Width);
-                }
-            }
+            if (wave == null) return;
+
+            // Incrementer defines how many samples are drawn per pixel. If the scalerbar is a hundredth 
+            int incrementer = ScalerBar.Value == ScalerBar.Minimum ? 1 : (int)(wave.Channels[0].Length * IncrementerMultiplier);
+
+            waveDrawer.DrawWave(wave.Channels[0], ref leftChart, (int)WaveScroller.Value, leftChart.Width + ScalerBar.Value, incrementer);
+            
+            if (wave.IsMono()) return;
+            waveDrawer.DrawWave(wave.Channels[1], ref rightChart, (int)WaveScroller.Value, rightChart.Width + ScalerBar.Value, incrementer);
         }
 
         private void WaveScrollHandler(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -292,26 +328,45 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
-        private void CutDeleteHandler(object sender, ExecutedRoutedEventArgs e)
+        private void CutCopyDeleteHandler(object sender, ExecutedRoutedEventArgs e)
         {
             var cursor = leftChart.ChartAreas[0].CursorX;
-            short[][] temp = wave.ExtractSamples((int)(cursor.SelectionStart + WaveScroller.Value), (int)GetCursorPosition());
 
-            if (e.Command == commands.Cut)
+            bool isCopying = e.Command == commands.Copy;
+
+            short[][] temp = wave.ExtractSamples((int)(cursor.SelectionStart + WaveScroller.Value), (int)GetCursorPosition(), !isCopying);
+
+            if (e.Command == commands.Cut || e.Command == commands.Copy)
             {
                 cutSamples = temp;
             }
 
             SyncCursors(cursor.SelectionStart, cursor.SelectionStart);
-
+            UpdateScalerMax();
+            UpdateScrollerMax();
             ClearCharts();
             RedrawWaves();
+        }
+
+        public void ClearHandler(object sender, RoutedEventArgs e)
+        {
+            wave = new Wave();
+
+            UpdateScalerMax();
+            UpdateScrollerMax();
+            ClearCharts();
+        }
+
+        private void ScaleCharts(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            ScalerBar.Value += e.Delta * scrollMultiplier;
         }
 
         private void PasteHandler(object sender, RoutedEventArgs e)
         {
             wave.InsertSamples(cutSamples, (int)GetCursorPosition());
-
+            UpdateScalerMax();
+            UpdateScrollerMax();
             ClearCharts();
             RedrawWaves();
         }
@@ -336,8 +391,7 @@ namespace WaveAnalyzer
             dftChart = ChartCreator.CreateDFTChart();
             DFTHost.Child = dftChart;
 
-            
-            //short[][] deez = Windowing.Triangular(wave.Channels);
+            //short[][] deez2 = Windowing.Triangular(wave.Channels);
             short[][] deez = Windowing.Hann(wave.Channels);
 
             Complex[] test = Fourier.DFT(deez[0], SAMPLES_AT_A_TIME, 10000);
@@ -358,8 +412,8 @@ namespace WaveAnalyzer
             //var dftCursor = dftChart.ChartAreas[0].CursorX;
             //var sampleCursor = leftChart.ChartAreas[0].CursorX;
 
-            //short[][] samplesToFilter = wave.ExtractSamples((int)sampleCursor.SelectionStart, (int)sampleCursor.SelectionEnd);
-            short[][] samplesToFilter = wave.ExtractSamples(10000, 30000);
+            //short[][] samplesToFilter = wave.ExtractSamples((int)sampleCursor.SelectionStart, (int)sampleCursor.SelectionEnd, true);
+            short[][] samplesToFilter = wave.ExtractSamples(10000, 30000, true);
 
             //Filter.FilterRange((int)dftCursor.SelectionStart, (int)dftCursor.SelectionEnd, samplesToFilter);
             Filter.FilterRange(0, 10, wave.SampleRate, samplesToFilter);
@@ -368,7 +422,6 @@ namespace WaveAnalyzer
             ClearCharts();
             RedrawWaves();
         }
-
 
         private void PressStop()
         {
@@ -389,6 +442,13 @@ namespace WaveAnalyzer
             die = false;
             ModelessDialog.setStopped(false);
             return;
+        }
+
+        private void ScalerHandler(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            UpdateScrollerMax();
+            ClearCharts();
+            RedrawWaves();
         }
     }
 }

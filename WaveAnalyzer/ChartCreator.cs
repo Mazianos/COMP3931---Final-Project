@@ -37,6 +37,7 @@ namespace WaveAnalyzer
             axisY.Maximum = 1;
             axisY.LabelStyle.Enabled = false;
             axisY.MajorGrid.Enabled = false;
+            axisY.ScrollBar.Enabled = true;
 
             var cursorX = area.CursorX;
             cursorX.IsUserEnabled = true;

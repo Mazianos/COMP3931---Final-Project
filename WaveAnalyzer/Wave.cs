@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.IO;
 
 namespace WaveAnalyzer
 {
     class Wave
     {
-        private short dataIndex;
         private int chunkID;
         private int chunkSize;
         private int format;
@@ -19,7 +19,17 @@ namespace WaveAnalyzer
         public short BitsPerSample { get; private set; }
         private int subchunk2ID;
         public int Subchunk2Size { get; private set; }
+
         public short[][] Channels { get; private set; }
+        private short dataIndex;
+
+        private const short DefaultHeaderLength = 44;
+
+        // Predetermined WAV header values.
+        private const int RIFF = 0x52494646;
+        private const int WAVE = 0x57415645;
+        private const int fmt_ = 0x666d7420;
+        private const int dataTag = 0x64617461;
 
         // Default wave values if a file is not provided.
         private const int defaultChunkSize = 49225302;
@@ -30,16 +40,17 @@ namespace WaveAnalyzer
         private const int defaultByteRate = 176400;
         private const short defaultBlockAlign = 2;
         private const short defaultBitsPerSample = 16;
+        
 
         public Wave()
         {
             // Write "RIFF".
-            chunkID = 0x52494646;
+            chunkID = RIFF;
             chunkSize = defaultChunkSize;
             // Write "WAVE".
-            format = 0x57415645;
+            format = WAVE;
             // Write "fmt ".
-            subchunk1ID = 0x666d7420;
+            subchunk1ID = fmt_;
             subchunk1Size = defaultSubchunk1Size;
             audioFormat = defaultAudioFormat;
             NumChannels = defaultNumChannels;
@@ -48,15 +59,15 @@ namespace WaveAnalyzer
             BlockAlign = defaultBlockAlign;
             BitsPerSample = defaultBitsPerSample;
             // Write "data".
-            subchunk2ID = 0x64617461;
+            subchunk2ID = dataTag;
             Subchunk2Size = 0;
-            dataIndex = 44;
+            dataIndex = DefaultHeaderLength;
 
             short[][] channels = new short[NumChannels][];
 
             for (short i = 0; i < NumChannels; ++i)
             {
-                channels[i] = new short[5];
+                channels[i] = new short[0];
             }
 
             Channels = channels;
@@ -70,7 +81,7 @@ namespace WaveAnalyzer
 
             // Initialize the channels 2D array where each row is a channel and every column is a sample.
             int samplesPerChannel = Subchunk2Size / 2 / NumChannels;
-            Channels = ExtractSamples(ref data, samplesPerChannel, dataIndex, NumChannels);
+            Channels = GetChannelsFromBytes(ref data, samplesPerChannel, dataIndex, NumChannels);
         }
 
         private void InitializeWaveHeader(ref byte[] data)
@@ -78,7 +89,7 @@ namespace WaveAnalyzer
             dataIndex = 0;
 
             // Read until it hits "RIFF".
-            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != 0x52494646)
+            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != RIFF)
             {
                 ++dataIndex;
             }
@@ -89,7 +100,7 @@ namespace WaveAnalyzer
             dataIndex += 4;
 
             // Read until it hits "WAVE".
-            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != 0x57415645)
+            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != WAVE)
             {
                 ++dataIndex;
             }
@@ -98,7 +109,7 @@ namespace WaveAnalyzer
             dataIndex += 4;
 
             // Read until it hits "fmt ".
-            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != 0x666d7420)
+            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != fmt_)
             {
                 ++dataIndex;
             }
@@ -114,7 +125,7 @@ namespace WaveAnalyzer
             dataIndex += 22;
 
             // Read until it hits "data".
-            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != 0x64617461)
+            while (ByteConverter.ToInt32BigEndian(data, dataIndex) != dataTag)
             {
                 ++dataIndex;
             }
@@ -125,7 +136,42 @@ namespace WaveAnalyzer
             dataIndex += 4;
         }
 
-        public static short[][] ExtractSamples(ref byte[] data, int samplesPerChannel, int dataStart, int numChannels)
+        private byte[] ConstructWaveHeader()
+        {
+            byte[] waveHeader = new byte[DefaultHeaderLength];
+
+            Array.Copy(ByteConverter.ToBytesBigEndian(RIFF), 0, waveHeader, 0, 4);
+            Array.Copy(BitConverter.GetBytes(chunkSize), 0, waveHeader, 4, 4);
+            Array.Copy(ByteConverter.ToBytesBigEndian(WAVE), 0, waveHeader, 8, 4);
+            Array.Copy(ByteConverter.ToBytesBigEndian(fmt_), 0, waveHeader, 12, 4);
+            Array.Copy(BitConverter.GetBytes(subchunk1Size), 0, waveHeader, 16, 4);
+            Array.Copy(BitConverter.GetBytes(audioFormat), 0, waveHeader, 20, 2);
+            Array.Copy(BitConverter.GetBytes(NumChannels), 0, waveHeader, 22, 2);
+            Array.Copy(BitConverter.GetBytes(SampleRate), 0, waveHeader, 24, 4);
+            Array.Copy(BitConverter.GetBytes(byteRate), 0, waveHeader, 28, 4);
+            Array.Copy(BitConverter.GetBytes(BlockAlign), 0, waveHeader, 32, 2);
+            Array.Copy(BitConverter.GetBytes(BitsPerSample), 0, waveHeader, 34, 2);
+            Array.Copy(ByteConverter.ToBytesBigEndian(dataTag), 0, waveHeader, 36, 4);
+            Array.Copy(BitConverter.GetBytes(Subchunk2Size), 0, waveHeader, 40, 4);
+
+            return waveHeader;
+        }
+
+        public void Save()
+        {
+            byte[] newFileBytes = new byte[Subchunk2Size + DefaultHeaderLength];
+            Array.Copy(ConstructWaveHeader(), newFileBytes, DefaultHeaderLength);
+            Array.Copy(GetBytesFromChannels(0), 0, newFileBytes, DefaultHeaderLength, Subchunk2Size);
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                File.WriteAllBytes(saveFileDialog.FileName, newFileBytes);
+            }
+        }
+
+        public static short[][] GetChannelsFromBytes(ref byte[] data, int samplesPerChannel, int dataStart, int numChannels)
         {
             short[][] channels = new short[numChannels][];
 
@@ -147,7 +193,7 @@ namespace WaveAnalyzer
             return channels;
         }
 
-        public byte[] GetChannelsInBytes(int startingSample)
+        public byte[] GetBytesFromChannels(int startingSample)
         {
             int start = startingSample < 0 ? 0 : startingSample;
 
@@ -171,10 +217,10 @@ namespace WaveAnalyzer
             return Channels.Length == 1;
         }
 
-        public short[][] ExtractSamples(int firstIndex, int secondIndex)
+        public short[][] ExtractSamples(int firstIndex, int secondIndex, bool permanentlyModify)
         {
-            int start = firstIndex < secondIndex ? firstIndex : secondIndex;
-            int end = firstIndex < secondIndex ? secondIndex : firstIndex;
+            int start = Math.Min(firstIndex, secondIndex);
+            int end = Math.Max(firstIndex, secondIndex);
 
             if (Channels[0].Length == 0)
             {
@@ -202,20 +248,23 @@ namespace WaveAnalyzer
                 
                 // Extract the samples for this channel in this array.
                 extractedSamples[i] = new short[extractedSamplesLength];
-
-                // Holds the remaining samples in the channel, after the specified samples are extracted.
-                short[] newChannel = new short[Channels[i].Length - extractedSamplesLength];
                 
-                // Put the first half of the unextracted samples from the original channel to the new channel.
-                for (int j = 0; j < start; ++j)
-                {
-                    newChannel[j] = Channels[i][j];
-                }
-
                 // Extracted the samples from the original channel to the new array.
                 for (int j = 0; j < extractedSamplesLength; ++j)
                 {
                     extractedSamples[i][j] = Channels[i][start + j];
+                }
+
+                // Continue if not permanently modifying (copy, not cut).
+                if (!permanentlyModify) continue;
+
+                // Holds the remaining samples in the channel, after the specified samples are extracted.
+                short[] newChannel = new short[Channels[i].Length - extractedSamplesLength];
+
+                // Put the first half of the unextracted samples from the original channel to the new channel.
+                for (int j = 0; j < start; ++j)
+                {
+                    newChannel[j] = Channels[i][j];
                 }
 
                 // Put the second half of the unextracted samples from the original channel to the new channel.
@@ -226,6 +275,8 @@ namespace WaveAnalyzer
 
                 Channels[i] = newChannel;
             }
+
+            Subchunk2Size = Channels[0].Length * 2 * NumChannels;
 
             return extractedSamples;
         }
