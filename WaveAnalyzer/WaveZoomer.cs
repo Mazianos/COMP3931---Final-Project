@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WaveAnalyzer
 {
     public class WaveZoomer
     {
-        private Stack<Tuple<double, double>> zooms;
+        private Stack<(double, double)> zooms;
 
         public WaveZoomer()
         {
-            zooms = new Stack<Tuple<double, double>>();
+            zooms = new Stack<(double, double)>();
         }
 
         public void HandleZoom(ref Chart chart, double delta, double position)
@@ -38,7 +37,7 @@ namespace WaveAnalyzer
             {
                 var min = axisX.ScaleView.ViewMinimum;
                 var max = axisX.ScaleView.ViewMaximum;
-                zooms.Push(new Tuple<double, double>(min, max));
+                zooms.Push((min, max));
 
                 axisX.ScaleView.Zoom(axisX.PixelPositionToValue(position) - (max - min) / 4, axisX.PixelPositionToValue(position) + (max - min) / 4);
             }

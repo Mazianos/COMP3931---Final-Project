@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Windows.Forms.DataVisualization.Charting;
+﻿using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WaveAnalyzer
 {
     class WaveDrawer
     {
-        public void DrawWave(short[] samples, ref Chart chart, int offset, double windowWidth, short minSample, short maxSample)
+        public void DrawWave(short[] samples, ref Chart chart, int offset, double windowWidth)
         {
+            short minSample = GetMinSample(samples);
+            short maxSample = GetMaxSample(samples);
             // Used for clamping the value of each sample to between 0 and 1.
             float denom = maxSample - minSample;
             if (denom == 0)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 
 namespace WaveAnalyzer
@@ -21,6 +20,47 @@ namespace WaveAnalyzer
         private int subchunk2ID;
         public int Subchunk2Size { get; private set; }
         public short[][] Channels { get; private set; }
+
+        // Default wave values if a file is not provided.
+        private const int defaultChunkSize = 49225302;
+        private const int defaultSubchunk1Size = 16;
+        private const short defaultAudioFormat = 1;
+        private const int defaultNumChannels = 1;
+        private const int defaultSampleRate = 44100;
+        private const int defaultByteRate = 176400;
+        private const short defaultBlockAlign = 2;
+        private const short defaultBitsPerSample = 16;
+
+        public Wave()
+        {
+            // Write "RIFF".
+            chunkID = 0x52494646;
+            chunkSize = defaultChunkSize;
+            // Write "WAVE".
+            format = 0x57415645;
+            // Write "fmt ".
+            subchunk1ID = 0x666d7420;
+            subchunk1Size = defaultSubchunk1Size;
+            audioFormat = defaultAudioFormat;
+            NumChannels = defaultNumChannels;
+            SampleRate = defaultSampleRate;
+            byteRate = defaultByteRate;
+            BlockAlign = defaultBlockAlign;
+            BitsPerSample = defaultBitsPerSample;
+            // Write "data".
+            subchunk2ID = 0x64617461;
+            Subchunk2Size = 0;
+            dataIndex = 44;
+
+            short[][] channels = new short[NumChannels][];
+
+            for (short i = 0; i < NumChannels; ++i)
+            {
+                channels[i] = new short[5];
+            }
+
+            Channels = channels;
+        }
 
         public Wave(string filePath)
         {
@@ -159,7 +199,7 @@ namespace WaveAnalyzer
             for (int i = 0; i < NumChannels; ++i)
             {
                 int extractedSamplesLength = end - start + 1;
-                Trace.WriteLine(extractedSamplesLength);
+                
                 // Extract the samples for this channel in this array.
                 extractedSamples[i] = new short[extractedSamplesLength];
 

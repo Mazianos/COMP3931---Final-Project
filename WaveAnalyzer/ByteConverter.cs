@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-
-namespace WaveAnalyzer
+﻿namespace WaveAnalyzer
 {
     public static class ByteConverter
     {

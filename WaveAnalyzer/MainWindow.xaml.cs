@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
-using System.Windows.Interop;
 using System.Windows.Input;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Controls;
@@ -34,10 +29,6 @@ namespace WaveAnalyzer
         private bool bPaused = false;
         private static bool die = false;
         private short[][] cutSamples;
-        private short leftMinSample;
-        private short leftMaxSample;
-        private short rightMaxSample;
-        private short rightMinSample;
 
         public MainWindow()
         {
@@ -47,6 +38,7 @@ namespace WaveAnalyzer
             waveZoomer = new WaveZoomer();
             commands = new Commands();
             cutSamples = null;
+            wave = new Wave();
 
             SetIconImages();
             SetupCommands();
@@ -156,20 +148,14 @@ namespace WaveAnalyzer
 
             Trace.WriteLine("Done!");
 
-            leftMinSample = waveDrawer.GetMinSample(wave.Channels[0]);
-            leftMaxSample = waveDrawer.GetMaxSample(wave.Channels[0]);
-
-            if (!wave.IsMono())
-            {
-                rightMinSample = waveDrawer.GetMinSample(wave.Channels[1]);
-                rightMaxSample = waveDrawer.GetMaxSample(wave.Channels[1]);
-            }
-
-            WaveScroller.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels - 1000;
-
             // Drawing.
             ClearCharts();
             RedrawWaves();
+        }
+
+        private void ResetScrollbarMax()
+        {
+            WaveScroller.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels - 1000;
         }
 
         private void SaveHandler(object sender, RoutedEventArgs e)
@@ -196,7 +182,7 @@ namespace WaveAnalyzer
                 }
                 ModelessDialog.BeginPlay();
                 die = false;
-                stopListener = new Thread(listen);
+                stopListener = new Thread(Listen);
                 stopListener.Start();
                 bPlaying = true;
             }
@@ -273,6 +259,12 @@ namespace WaveAnalyzer
             RecordButton.IsEnabled = false;
 
             bRecording = true;
+
+            fixed (byte* p = new byte[1])
+            {
+                ModelessDialog.SetWaveData(p, 1, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
+            }
+            
             ModelessDialog.BeginRecord();
         }
 
@@ -280,16 +272,17 @@ namespace WaveAnalyzer
         {
             leftChart.Series[0].Points.Clear();
             rightChart.Series[0].Points.Clear();
+            ResetScrollbarMax();
         }
 
         private void RedrawWaves()
         {
             if (wave != null)
             {
-                waveDrawer.DrawWave(wave.Channels[0], ref leftChart, (int)WaveScroller.Value, leftChart.Width, leftMinSample, leftMaxSample);
+                waveDrawer.DrawWave(wave.Channels[0], ref leftChart, (int)WaveScroller.Value, leftChart.Width);
                 if (!wave.IsMono())
                 {
-                    waveDrawer.DrawWave(wave.Channels[1], ref rightChart, (int)WaveScroller.Value, rightChart.Width, rightMinSample, rightMaxSample);
+                    waveDrawer.DrawWave(wave.Channels[1], ref rightChart, (int)WaveScroller.Value, rightChart.Width);
                 }
             }
         }
@@ -324,8 +317,7 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
-
-        private const int SAMPLES_AT_A_TIME = 1000;
+        private const int SAMPLES_AT_A_TIME = 5000;
         private void DFTHandler(object sender, RoutedEventArgs e)
         {
             /*Complex[] A = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
@@ -345,12 +337,14 @@ namespace WaveAnalyzer
             dftChart = ChartCreator.CreateDFTChart();
             DFTHost.Child = dftChart;
 
+            
+            //short[][] deez2 = Windowing.Triangular(wave.Channels);
+            short[][] deez = Windowing.Hann(wave.Channels);
 
-            Complex[] test = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
+            Complex[] test = Fourier.DFT(deez[0], SAMPLES_AT_A_TIME, 10000);
             Fourier.DivideByN(test, SAMPLES_AT_A_TIME);
 
             double[] amplitudes = Fourier.GetAmplitudes(test);
-
 
             dftChart.ChartAreas[0].AxisY.Maximum = (int)amplitudes.Max() + 1;
 
@@ -362,34 +356,34 @@ namespace WaveAnalyzer
 
         private void FilterHandler(object sender, RoutedEventArgs e)
         {
-            var dftCursor = dftChart.ChartAreas[0].CursorX;
-            var sampleCursor = leftChart.ChartAreas[0].CursorX;
+            //var dftCursor = dftChart.ChartAreas[0].CursorX;
+            //var sampleCursor = leftChart.ChartAreas[0].CursorX;
 
             //short[][] samplesToFilter = wave.ExtractSamples((int)sampleCursor.SelectionStart, (int)sampleCursor.SelectionEnd);
-            short[][] samplesToFilter = wave.ExtractSamples(0, 1000);
+            short[][] samplesToFilter = wave.ExtractSamples(10000, 30000);
 
-            Filter.FilterRange((int)dftCursor.SelectionStart, (int)dftCursor.SelectionEnd, samplesToFilter);
-
-            wave.InsertSamples(samplesToFilter, 0);
+            //Filter.FilterRange((int)dftCursor.SelectionStart, (int)dftCursor.SelectionEnd, samplesToFilter);
+            Filter.FilterRange(0, 10, wave.SampleRate, samplesToFilter);
+            wave.InsertSamples(samplesToFilter, 10000);
 
             ClearCharts();
             RedrawWaves();
         }
 
 
-        private void pressStop()
+        private void PressStop()
         {
             StopButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
 
-        private void listen()
+        private void Listen()
         {
             while (!die)
             {
                 die = ModelessDialog.checkStopped();
                 if (die)
                 {
-                    stopButtonDelegate del = new stopButtonDelegate(pressStop);
+                    stopButtonDelegate del = new stopButtonDelegate(PressStop);
                     Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, del);
                 }
             }
