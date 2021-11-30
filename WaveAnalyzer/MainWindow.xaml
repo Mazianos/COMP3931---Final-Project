@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:WaveAnalyzer"
         mc:Ignorable="d"
         Title="Wave Analyzer" Height="720" Width="1280">
+    <ScrollViewer>
     <StackPanel>
         <Grid Margin="50, 25, 50, 25">
             <StackPanel Orientation="Horizontal">
@@ -65,4 +66,5 @@
             </StackPanel>
         </Grid>
     </StackPanel>
+    </ScrollViewer>
 </Window>

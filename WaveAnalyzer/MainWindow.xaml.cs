@@ -30,7 +30,8 @@ namespace WaveAnalyzer
         private short[][] cutSamples;
         private const int WaveHeightPadding = 1000;
         private const float IncrementerMultiplier = 0.001f;
-        private const int ScrollMultiplier = 25;
+        private const float ScrollIntensityMultiplier = 0.0005f;
+        private int scrollMultiplier = 1;
 
         public MainWindow()
         {
@@ -155,7 +156,10 @@ namespace WaveAnalyzer
 
         private void UpdateScalerMax()
         {
+            if (wave == null) return;
+
             ScalerBar.Maximum = wave.Subchunk2Size / 2 / wave.NumChannels;
+            scrollMultiplier = (int)(wave.Channels[0].Length * ScrollIntensityMultiplier);
         }
 
         private void UpdateChartHeights()
@@ -188,6 +192,11 @@ namespace WaveAnalyzer
         private void SaveHandler(object sender, RoutedEventArgs e)
         {
             wave.Save();
+        }
+
+        private void MoveCursorWhilePlaying()
+        {
+            
         }
 
         /**
@@ -350,7 +359,7 @@ namespace WaveAnalyzer
 
         private void ScaleCharts(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            ScalerBar.Value += e.Delta * ScrollMultiplier;
+            ScalerBar.Value += e.Delta * scrollMultiplier;
         }
 
         private void PasteHandler(object sender, RoutedEventArgs e)
@@ -440,11 +449,6 @@ namespace WaveAnalyzer
             UpdateScrollerMax();
             ClearCharts();
             RedrawWaves();
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }
