@@ -143,11 +143,11 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Open waveform audio for input
 
             waveform.wFormatTag = WAVE_FORMAT_PCM;
-            waveform.nChannels = 1;
-            waveform.nSamplesPerSec = 44100;
-            waveform.nAvgBytesPerSec = 44100;
-            waveform.nBlockAlign = 2;
-            waveform.wBitsPerSample = 16;
+            waveform.nChannels = numChannels;
+            waveform.nSamplesPerSec = sampleRate;
+            waveform.nAvgBytesPerSec = sampleRate;
+            waveform.nBlockAlign = blockAlign;
+            waveform.wBitsPerSample = bitsPerSample;
             waveform.cbSize = 0;
 
             if (waveInOpen(&hWaveIn, WAVE_MAPPER, &waveform,
@@ -482,4 +482,8 @@ void EndPlay() {
 
 BOOL checkStopped() {
     return stopped;
+}
+
+void setStopped(BOOL isStopped) {
+    stopped = isStopped;
 }

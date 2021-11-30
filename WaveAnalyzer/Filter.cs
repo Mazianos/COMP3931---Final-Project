@@ -4,11 +4,9 @@ namespace WaveAnalyzer
 {
     public static class Filter
     {
-        public static void FilterRange(int hzStart, int hzEnd, int sampleRate, short[][] samplesToFilter)
+        public static void FilterRange(int binStart, int binEnd, int sampleRate, short[][] samplesToFilter)
         {
             int samplesLength = samplesToFilter[0].Length;
-            int binStart = samplesLength * hzStart / sampleRate;
-            int binEnd = samplesLength * hzEnd / sampleRate;
             Complex[] A = CreateWeights(binStart, binEnd, sampleRate);
             double[] weights = Fourier.InverseDFT(A, samplesLength);
 
@@ -18,7 +16,6 @@ namespace WaveAnalyzer
                 Convolution(samplesToFilter[i], weights);
                 Array.Resize(ref samplesToFilter[i], samplesLength);
             }
-            
         }
 
         public static Complex[] CreateWeights(int binStart, int binEnd, int sampleRate)

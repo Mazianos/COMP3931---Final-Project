@@ -27,12 +27,8 @@ namespace WaveAnalyzer
         private bool bRecording;
         private bool bPlaying;
         private bool bPaused = false;
-        private static bool die;
+        private static bool die = false;
         private short[][] cutSamples;
-        private short leftMinSample;
-        private short leftMaxSample;
-        private short rightMaxSample;
-        private short rightMinSample;
 
         public MainWindow()
         {
@@ -42,6 +38,7 @@ namespace WaveAnalyzer
             waveZoomer = new WaveZoomer();
             commands = new Commands();
             cutSamples = null;
+            wave = new Wave();
 
             SetIconImages();
             SetupCommands();
@@ -151,15 +148,6 @@ namespace WaveAnalyzer
 
             Trace.WriteLine("Done!");
 
-            leftMinSample = waveDrawer.GetMinSample(wave.Channels[0]);
-            leftMaxSample = waveDrawer.GetMaxSample(wave.Channels[0]);
-
-            if (!wave.IsMono())
-            {
-                rightMinSample = waveDrawer.GetMinSample(wave.Channels[1]);
-                rightMaxSample = waveDrawer.GetMaxSample(wave.Channels[1]);
-            }
-
             // Drawing.
             ClearCharts();
             RedrawWaves();
@@ -193,7 +181,8 @@ namespace WaveAnalyzer
                     ModelessDialog.SetWaveData(p, (uint)data.Length, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
                 }
                 ModelessDialog.BeginPlay();
-                stopListener = new Thread(listen);
+                die = false;
+                stopListener = new Thread(Listen);
                 stopListener.Start();
                 bPlaying = true;
             }
@@ -270,6 +259,12 @@ namespace WaveAnalyzer
             RecordButton.IsEnabled = false;
 
             bRecording = true;
+
+            fixed (byte* p = new byte[1])
+            {
+                ModelessDialog.SetWaveData(p, 1, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
+            }
+            
             ModelessDialog.BeginRecord();
         }
 
@@ -284,10 +279,10 @@ namespace WaveAnalyzer
         {
             if (wave != null)
             {
-                waveDrawer.DrawWave(wave.Channels[0], ref leftChart, (int)WaveScroller.Value, leftChart.Width, leftMinSample, leftMaxSample);
+                waveDrawer.DrawWave(wave.Channels[0], ref leftChart, (int)WaveScroller.Value, leftChart.Width);
                 if (!wave.IsMono())
                 {
-                    waveDrawer.DrawWave(wave.Channels[1], ref rightChart, (int)WaveScroller.Value, rightChart.Width, rightMinSample, rightMaxSample);
+                    waveDrawer.DrawWave(wave.Channels[1], ref rightChart, (int)WaveScroller.Value, rightChart.Width);
                 }
             }
         }
@@ -375,25 +370,26 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
-        //Everything below is not working as intended.
-        // Don't trust this ^
-        private void pressStop()
+
+        private void PressStop()
         {
             StopButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
 
-        private void listen()
+        private void Listen()
         {
             while (!die)
             {
                 die = ModelessDialog.checkStopped();
                 if (die)
                 {
-                    stopButtonDelegate del = new stopButtonDelegate(pressStop);
-                    Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, del);
+                    stopButtonDelegate del = new stopButtonDelegate(PressStop);
+                    Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, del);
                 }
             }
             die = false;
+            ModelessDialog.setStopped(false);
+            return;
         }
     }
 }

@@ -27,3 +27,5 @@ extern SOUND_PROCESSING_API void BeginPlay();
 extern SOUND_PROCESSING_API void EndPlay();
 
 extern SOUND_PROCESSING_API BOOL checkStopped();
+
+extern SOUND_PROCESSING_API void setStopped(BOOL);
