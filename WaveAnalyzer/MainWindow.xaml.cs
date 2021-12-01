@@ -123,6 +123,7 @@ namespace WaveAnalyzer
         {
             PlayPauseButton.IsEnabled = true;
             StopButton.IsEnabled = true;
+            SaveButton.IsEnabled = true;
             Hann.IsEnabled = true;
             Triang.IsEnabled = true;
             // Opens the open file dialog box.
