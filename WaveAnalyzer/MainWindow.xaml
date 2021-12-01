@@ -7,65 +7,66 @@
         mc:Ignorable="d"
         Title="Wave Analyzer" Height="720" Width="1280">
     <ScrollViewer>
-    <StackPanel>
-        <Grid Margin="50, 25, 50, 25">
-            <StackPanel Orientation="Horizontal">
-                <Button Name="OpenButton" Click="OpenHandler">
-                    <Image Name="OpenIcon"/>
-                </Button>
-                <Button Name="SaveButton" Click="SaveHandler" IsEnabled="False">
-                    <Image Name="SaveIcon"/>
-                </Button>
-                <Canvas Margin="50, 0, 0, 0">
-                    <Expander Name="DFTButton">
-                        <Expander.Header>
-                            <BulletDecorator>
-                                <BulletDecorator.Bullet>
-                                    <Image Name="DFTIcon"/>
-                                </BulletDecorator.Bullet>
-                            </BulletDecorator>
-                        </Expander.Header>
-                        <StackPanel Background="#EEEEEE">
-                            <Button Content="Hann" Name="Hann" Click="Hann_Click" IsEnabled="False"/>
-                            <Button Content="Triangle" Name="Triang" Click="Triang_Click" IsEnabled="False"/>
-                        </StackPanel>
-                    </Expander>
-                </Canvas>
-                <Button Margin="100, 0, 0, 0" Name="FilterButton" Click="FilterHandler" IsEnabled="False">
-                    <Image Name="FilterIcon"/>
-                </Button>
+        <StackPanel>
+            <Grid Margin="50, 25, 50, 25">
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="OpenButton" Click="OpenHandler">
+                        <Image x:Name="OpenIcon"/>
+                    </Button>
+                    <Button x:Name="SaveButton" Click="SaveHandler" IsEnabled="False">
+                        <Image x:Name="SaveIcon"/>
+                    </Button>
+                    <Canvas Margin="50, 0, 0, 0">
+                        <Expander x:Name="DFTButton">
+                            <Expander.Header>
+                                <BulletDecorator>
+                                    <BulletDecorator.Bullet>
+                                        <Image x:Name="DFTIcon"/>
+                                    </BulletDecorator.Bullet>
+                                </BulletDecorator>
+                            </Expander.Header>
+                            <StackPanel Background="#EEEEEE">
+                                <Button Content="Hann" x:Name="Hann" Click="Hann_Click" IsEnabled="False"/>
+                                <Button Content="Triangle" x:Name="Triang" Click="Triang_Click" IsEnabled="False"/>
+                            </StackPanel>
+                        </Expander>
+                    </Canvas>
+                    <Button Margin="100, 0, 50, 0" x:Name="FilterButton" Click="FilterHandler" IsEnabled="False">
+                        <Image x:Name="FilterIcon"/>
+                    </Button>
+                    <TextBox Name="SampleEntry" Text="22050" TextWrapping="Wrap" Width="80"/>
                 </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Name="PlayPauseButton" Click="PlayPauseHandler" IsEnabled="False">
-                    <Image Name="PlayPauseIcon"/>
-                </Button>
-                <Button Name="StopButton" Click="StopHandler" IsEnabled="False">
-                    <Image Name="StopIcon"/>
-                </Button>
-                <Button Name="RecordButton" Click="RecordHandler">
-                    <Image Name="RecordIcon"/>
-                </Button>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Slider Style="{DynamicResource VolumeSlider}" Maximum="100" Width="250" Value="50" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                <Button Margin="50, 0, 0, 0" Name="ClearButton" Click="ClearHandler">
-                    <Image Name="ClearIcon"/>
-                </Button>
-            </StackPanel>
-        </Grid>
-        <Grid Margin="0, 50, 0, 0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <ScrollBar Grid.Column="0" Minimum="0" Maximum="0" Margin="10, 10, 10, 70" Width="50" Name="ScalerBar" ValueChanged="ScalerHandler"/>
-            <StackPanel Grid.Column="1" Margin="10, 0, 0, 0" Name="HostPanel">
-                <WindowsFormsHost Name="LeftHost" Margin="0, 40, 10, 0"/>
-                <WindowsFormsHost Name="RightHost" Margin="0, -10, 10, 0"/>
-                <ScrollBar Minimum="0" Maximum="0" Name="WaveScroller" Margin="40, 0, 50, 0" Orientation="Horizontal" Height="50" ValueChanged="WaveScrollHandler"/>
-                    <WindowsFormsHost Name="DFTHost" Margin="0, 20, 10, 0"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="PlayPauseButton" Click="PlayPauseHandler" IsEnabled="False">
+                        <Image x:Name="PlayPauseIcon"/>
+                    </Button>
+                    <Button x:Name="StopButton" Click="StopHandler" IsEnabled="False">
+                        <Image x:Name="StopIcon"/>
+                    </Button>
+                    <Button x:Name="RecordButton" Click="RecordHandler">
+                        <Image x:Name="RecordIcon"/>
+                    </Button>
                 </StackPanel>
-        </Grid>
-    </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Slider Style="{DynamicResource VolumeSlider}" Maximum="100" Width="250" Value="50" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                    <Button Margin="50, 0, 0, 0" x:Name="ClearButton" Click="ClearHandler">
+                        <Image x:Name="ClearIcon"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <Grid Margin="0, 50, 0, 0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <ScrollBar Grid.Column="0" Minimum="0" Maximum="0" Margin="10, 10, 10, 70" Width="50" x:Name="ScalerBar" ValueChanged="ScalerHandler"/>
+                <StackPanel Grid.Column="1" Margin="10, 0, 0, 0" x:Name="HostPanel">
+                    <WindowsFormsHost x:Name="LeftHost" Margin="0, 40, 10, 0"/>
+                    <WindowsFormsHost x:Name="RightHost" Margin="0, -10, 10, 0"/>
+                    <ScrollBar Minimum="0" Maximum="0" x:Name="WaveScroller" Margin="40, 0, 50, 0" Orientation="Horizontal" Height="50" ValueChanged="WaveScrollHandler"/>
+                    <WindowsFormsHost x:Name="DFTHost" Margin="0, 20, 10, 0"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
     </ScrollViewer>
 </Window>

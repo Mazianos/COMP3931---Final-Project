@@ -57,6 +57,7 @@ namespace WaveAnalyzer
     public static class Fourier
     {
         private const int DECIMAL_PLACES = 3;
+        private const int Threads = 5;
         private static Complex[] A;
 
         private static void DFTTask(object data)
@@ -84,15 +85,13 @@ namespace WaveAnalyzer
             int firstIndex = 0;
             int secondIndex = 0;
 
-            Task[] tasks = new Task[5];
-
-            Action<object> action = DFTTask;
+            Task[] tasks = new Task[Threads];
 
             for (int i = 0; i < tasks.Length; ++i)
             {
                 secondIndex += N / tasks.Length;
 
-                Task t = Task.Factory.StartNew(action, new ThreadData(firstIndex, secondIndex, N, s));
+                Task t = Task.Factory.StartNew(DFTTask, new ThreadData(firstIndex, secondIndex, N, s));
                 tasks[i] = t;
 
                 firstIndex = secondIndex;
