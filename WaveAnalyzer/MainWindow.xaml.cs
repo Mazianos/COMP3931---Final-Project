@@ -147,6 +147,8 @@ namespace WaveAnalyzer
             // Read the wave file in bytes.
             wave = new Wave(openFileDialog.FileName);
 
+            SampleEntry.Text = wave.SampleRate.ToString();
+
             Trace.WriteLine("Done!");
 
             DFTHost.Child = null;
@@ -221,6 +223,8 @@ namespace WaveAnalyzer
 
                 // Get the wave data in bytes starting at the cursor position.
                 byte[] data = wave.GetBytesFromChannels((int)GetCursorPosition());
+
+                wave.SampleRate = System.Int32.Parse(SampleEntry.Text);
 
                 fixed (byte* p = data)
                 {
@@ -317,11 +321,11 @@ namespace WaveAnalyzer
 
             bRecording = true;
 
-            int SampleRate = System.Int16.Parse(SampleEntry.Text);
+            wave.SampleRate = System.Int32.Parse(SampleEntry.Text);
 
             fixed (byte* p = new byte[1])
             {
-                ModelessDialog.SetWaveData(p, 1, wave.NumChannels, SampleRate, wave.BlockAlign, wave.BitsPerSample);
+                ModelessDialog.SetWaveData(p, 1, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
             }
             
             ModelessDialog.BeginRecord();
