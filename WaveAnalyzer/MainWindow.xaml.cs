@@ -521,10 +521,5 @@ namespace WaveAnalyzer
 
             DFTHandler(temp);
         }
-
-        private void SampleEntry_KeyDown(object sender, KeyEventArgs e)
-        {
-
-        }
     }
 }

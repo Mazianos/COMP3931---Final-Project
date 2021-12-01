@@ -45,9 +45,9 @@
                     <Button x:Name="RecordButton" Click="RecordHandler">
                         <Image x:Name="RecordIcon"/>
                     </Button>
-                    <TextBox Margin="50, 0, 0, 0" Name="SampleEntry" Text="22050" FontSize="20" MaxHeight="30" TextAlignment="Center" TextWrapping="Wrap" Width="80"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBox Margin="0, 0, 50, 0" Name="SampleEntry" Text="22050" FontSize="20" MaxHeight="30" TextAlignment="Center" TextWrapping="Wrap" Width="80"/>
                     <Slider Style="{DynamicResource VolumeSlider}" Maximum="100" Width="250" Value="50" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                     <Button Margin="50, 0, 0, 0" x:Name="ClearButton" Click="ClearHandler">
                         <Image x:Name="ClearIcon"/>
