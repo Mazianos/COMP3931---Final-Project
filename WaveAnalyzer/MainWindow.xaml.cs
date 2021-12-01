@@ -123,6 +123,7 @@ namespace WaveAnalyzer
         {
             PlayPauseButton.IsEnabled = true;
             StopButton.IsEnabled = true;
+            SaveButton.IsEnabled = true;
             Hann.IsEnabled = true;
             Triang.IsEnabled = true;
             // Opens the open file dialog box.
@@ -146,6 +147,8 @@ namespace WaveAnalyzer
 
             // Read the wave file in bytes.
             wave = new Wave(openFileDialog.FileName);
+
+            SampleEntry.Text = wave.SampleRate.ToString();
 
             Trace.WriteLine("Done!");
 
@@ -221,6 +224,8 @@ namespace WaveAnalyzer
 
                 // Get the wave data in bytes starting at the cursor position.
                 byte[] data = wave.GetBytesFromChannels((int)GetCursorPosition());
+
+                wave.SampleRate = System.Int32.Parse(SampleEntry.Text);
 
                 fixed (byte* p = data)
                 {
@@ -316,6 +321,8 @@ namespace WaveAnalyzer
             StopButton.IsEnabled = true;
 
             bRecording = true;
+
+            wave.SampleRate = System.Int32.Parse(SampleEntry.Text);
 
             fixed (byte* p = new byte[1])
             {

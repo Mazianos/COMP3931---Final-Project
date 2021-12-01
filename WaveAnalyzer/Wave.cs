@@ -14,7 +14,7 @@ namespace WaveAnalyzer
         private int subchunk1Size;
         private short audioFormat;
         public short NumChannels { get; private set; }
-        public int SampleRate { get; private set; }
+        public int SampleRate { get; set; }
         private int byteRate;
         public short BlockAlign { get; private set; }
         public short BitsPerSample { get; private set; }
