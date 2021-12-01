@@ -317,9 +317,11 @@ namespace WaveAnalyzer
 
             bRecording = true;
 
+            int SampleRate = System.Int16.Parse(SampleEntry.Text);
+
             fixed (byte* p = new byte[1])
             {
-                ModelessDialog.SetWaveData(p, 1, wave.NumChannels, wave.SampleRate, wave.BlockAlign, wave.BitsPerSample);
+                ModelessDialog.SetWaveData(p, 1, wave.NumChannels, SampleRate, wave.BlockAlign, wave.BitsPerSample);
             }
             
             ModelessDialog.BeginRecord();
