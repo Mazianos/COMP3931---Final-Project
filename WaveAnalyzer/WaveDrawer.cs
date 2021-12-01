@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms.DataVisualization.Charting;
+﻿using System.Diagnostics;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WaveAnalyzer
 {

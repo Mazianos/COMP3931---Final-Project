@@ -83,6 +83,14 @@ namespace WaveAnalyzer {
         #line hidden
         
         
+        #line 20 "..\..\..\MainWindow.xaml"
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
+        internal System.Windows.Controls.Expander DFTButton;
+        
+        #line default
+        #line hidden
+        
+        
         #line 24 "..\..\..\MainWindow.xaml"
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
         internal System.Windows.Controls.Image DFTIcon;
@@ -276,7 +284,7 @@ namespace WaveAnalyzer {
             this.SaveIcon = ((System.Windows.Controls.Image)(target));
             return;
             case 6:
-            this.DFTIcon = ((System.Windows.Controls.Image)(target));
+            this.DFTButton = ((System.Windows.Controls.Expander)(target));
             return;
             case 7:
             this.Hann = ((System.Windows.Controls.Button)(target));

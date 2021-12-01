@@ -20,7 +20,7 @@ namespace WaveAnalyzer
         private int subchunk2ID;
         public int Subchunk2Size { get; private set; }
 
-        public short[][] Channels { get; private set; }
+        public short[][] Channels { get; set; }
         private short dataIndex;
 
         private const short DefaultHeaderLength = 44;
@@ -71,6 +71,23 @@ namespace WaveAnalyzer
             }
 
             Channels = channels;
+        }
+
+        public Wave(Wave other)
+        {
+            chunkID = other.chunkID;
+            chunkSize = other.chunkSize;
+            format = other.format;
+            subchunk1ID = other.subchunk1ID;
+            subchunk1Size = other.subchunk1Size;
+            audioFormat = other.audioFormat;
+            NumChannels = other.NumChannels;
+            SampleRate = other.SampleRate;
+            byteRate = other.byteRate;
+            BlockAlign = other.BlockAlign;
+            BitsPerSample = other.BitsPerSample;
+            subchunk2ID = other.subchunk2ID;
+            Subchunk2Size = other.Subchunk2Size;
         }
 
         public Wave(string filePath)
@@ -195,7 +212,7 @@ namespace WaveAnalyzer
 
         public byte[] GetBytesFromChannels(int startingSample)
         {
-            int start = startingSample < 0 ? 0 : startingSample;
+            int start = Math.Max(0, startingSample);
 
             byte[] byteData = new byte[Subchunk2Size - start * 2 * NumChannels];
 
@@ -281,9 +298,9 @@ namespace WaveAnalyzer
             return extractedSamples;
         }
 
-        public void InsertSamples(short[][] samples, int position)
+        public void InsertSamples(Wave wave, int position)
         {
-            if (samples == null) return;
+            if (wave == null) return;
 
             if (position > Channels[0].Length - 1)
             {
@@ -293,7 +310,30 @@ namespace WaveAnalyzer
             {
                 position = 0;
             }
-            
+
+            short[][] samples = new short[wave.Channels.Length][];
+            for (int i = 0; i < samples.Length; ++i)
+            {
+                samples[i] = new short[wave.Channels[i].Length];
+                Array.Copy(wave.Channels[i], samples[i], wave.Channels[i].Length);
+            }
+
+            int otherSampleRate = wave.SampleRate;
+
+            while (otherSampleRate - SampleRate < -1000)
+            {
+                samples = UpSample(samples);
+
+                otherSampleRate <<= 1;
+            }
+
+            while (otherSampleRate - SampleRate > 1000)
+            {
+                samples = DownSample(samples);
+
+                otherSampleRate >>= 1;
+            }
+
             // If the inserted samples have less channels than the song,
             // insert empty channels into the sample array until they are equal.
             if (samples.Length < Channels.Length)
@@ -330,6 +370,41 @@ namespace WaveAnalyzer
             }
 
             Subchunk2Size = Channels[0].Length * 2 * NumChannels;
+        }
+
+        private short[][] UpSample(short[][] samples)
+        {
+            short[][] upSamples = new short[samples.Length][];
+
+            for (int i = 0; i < upSamples.Length; ++i)
+            {
+                upSamples[i] = new short[samples[i].Length * 2];
+                
+                for (int j = 0; j < samples[i].Length; ++j)
+                {
+                    upSamples[i][j * 2] = samples[i][j];
+                    upSamples[i][j * 2 + 1] = samples[i][j];
+                }
+            }
+
+            return upSamples;
+        }
+
+        private short[][] DownSample(short[][] samples)
+        {
+            short[][] downSamples = new short[samples.Length][];
+
+            for (int i = 0; i < downSamples.Length; ++i)
+            {
+                downSamples[i] = new short[samples[i].Length / 2];
+
+                for (int j = 0; j < downSamples[i].Length; ++j)
+                {
+                    downSamples[i][j] = samples[i][j * 2];
+                }
+            }
+
+            return downSamples;
         }
     }
 }

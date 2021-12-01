@@ -17,7 +17,7 @@
                     <Image Name="SaveIcon"/>
                 </Button>
                 <Canvas Margin="50, 0, 0, 0">
-                    <Expander>
+                    <Expander Name="DFTButton">
                         <Expander.Header>
                             <BulletDecorator>
                                 <BulletDecorator.Bullet>
