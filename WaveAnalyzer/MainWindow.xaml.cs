@@ -8,6 +8,8 @@ using System.Windows.Forms.DataVisualization.Charting;
 using System.Windows.Controls;
 using System.Threading;
 using System.Windows.Threading;
+using System.Windows.Shapes;
+using System.ComponentModel;
 
 namespace WaveAnalyzer
 {
@@ -27,11 +29,12 @@ namespace WaveAnalyzer
         private bool bPlaying;
         private bool bPaused = false;
         private static bool die = false;
-        private short[][] cutSamples;
+        private Wave clipboard;
         private const int WaveHeightPadding = 1000;
         private const float IncrementerMultiplier = 0.001f;
         private const float ScrollIntensityMultiplier = 0.0005f;
         private int scrollMultiplier = 1;
+        private BackgroundWorker worker;
 
         public MainWindow()
         {
@@ -40,8 +43,12 @@ namespace WaveAnalyzer
             waveDrawer = new WaveDrawer();
             waveZoomer = new WaveZoomer();
             commands = new Commands();
-            cutSamples = null;
             wave = new Wave();
+
+            worker = new BackgroundWorker();
+            worker.WorkerReportsProgress = true;
+            worker.DoWork += new DoWorkEventHandler(WorkerDoWork);
+            worker.ProgressChanged += new ProgressChangedEventHandler(WorkerProgressChanged);
 
             SetIconImages();
             SetupCommands();
@@ -142,11 +149,12 @@ namespace WaveAnalyzer
 
             Trace.WriteLine("Done!");
 
-            WaveScroller.Value = WaveScroller.Minimum;
-            ScalerBar.Value = ScalerBar.Minimum;
-
             UpdateScalerMax();
             UpdateScrollerMax();
+
+            WaveScroller.Value = WaveScroller.Minimum;
+            ScalerBar.Value = ScalerBar.Maximum;
+
             UpdateChartHeights();
 
             // Drawing.
@@ -194,9 +202,21 @@ namespace WaveAnalyzer
             wave.Save();
         }
 
-        private void MoveCursorWhilePlaying()
+        private void WorkerDoWork(object sender, DoWorkEventArgs e)
         {
-            
+            /*
+            while (bPlaying)
+            {
+                worker.ReportProgress(6);
+                Thread.Sleep(20);
+            }*/
+        }
+
+        private void WorkerProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            var cursorX = leftChart.ChartAreas[0].CursorX;
+            cursorX.Position += 500;
+            rightChart.ChartAreas[0].CursorX.Position = cursorX.Position;
         }
 
         /**
@@ -206,8 +226,14 @@ namespace WaveAnalyzer
         {
             if (!bPlaying)
             {
+                OpenButton.IsEnabled = false;
+                SaveButton.IsEnabled = false;
                 RecordButton.IsEnabled = false;
+                ClearButton.IsEnabled = false;
+                DFTButton.IsEnabled = false;
                 PlayPauseIcon.Source = AppImage.PauseIcon;
+
+                Trace.WriteLine("wave " + wave.Subchunk2Size);
 
                 // Get the wave data in bytes starting at the cursor position.
                 byte[] data = wave.GetBytesFromChannels((int)GetCursorPosition());
@@ -221,12 +247,20 @@ namespace WaveAnalyzer
                 stopListener = new Thread(Listen);
                 stopListener.Start();
                 bPlaying = true;
+
+                worker.RunWorkerAsync();
             }
             else
             {
-                PlayPauseIcon.Source = bPaused ? AppImage.PlayIcon : AppImage.PauseIcon;
+                PlayPauseIcon.Source = AppImage.PlayIcon;
+                OpenButton.IsEnabled = true;
+                SaveButton.IsEnabled = true;
+                PlayPauseButton.IsEnabled = true;
+                RecordButton.IsEnabled = true;
+                ClearButton.IsEnabled = true;
+                DFTButton.IsEnabled = true;
+
                 bPaused = !bPaused;
-                RecordButton.IsEnabled = !RecordButton.IsEnabled;
 
                 ModelessDialog.PausePlay();
             }
@@ -241,6 +275,8 @@ namespace WaveAnalyzer
             SaveButton.IsEnabled = true;
             PlayPauseButton.IsEnabled = true;
             RecordButton.IsEnabled = true;
+            ClearButton.IsEnabled = true;
+            DFTButton.IsEnabled = true;
 
             PlayPauseIcon.Source = AppImage.PlayIcon;
 
@@ -258,9 +294,13 @@ namespace WaveAnalyzer
                 Marshal.Copy(ModelessDialog.GetSaveBuffer(), recordedBytes, 0, recordedLength);
                 short[][] recordedSamples = Wave.GetChannelsFromBytes(ref recordedBytes, recordedLength / 2, 0, 1);
 
+                Wave recordedWave = new Wave();
+                recordedWave.Channels = recordedSamples;
+
+
                 if (wave != null)
                 {
-                    wave.InsertSamples(recordedSamples, (int)GetCursorPosition());
+                    wave.InsertSamples(recordedWave, (int)GetCursorPosition());
                 }
 
                 UpdateScalerMax();
@@ -289,6 +329,8 @@ namespace WaveAnalyzer
             SaveButton.IsEnabled = false;
             PlayPauseButton.IsEnabled = false;
             RecordButton.IsEnabled = false;
+            ClearButton.IsEnabled = false;
+            DFTButton.IsEnabled = false;
 
             bRecording = true;
 
@@ -338,7 +380,8 @@ namespace WaveAnalyzer
 
             if (e.Command == commands.Cut || e.Command == commands.Copy)
             {
-                cutSamples = temp;
+                clipboard = new Wave(wave);
+                clipboard.Channels = temp;
             }
 
             SyncCursors(cursor.SelectionStart, cursor.SelectionStart);
@@ -359,12 +402,12 @@ namespace WaveAnalyzer
 
         private void ScaleCharts(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            ScalerBar.Value += e.Delta * scrollMultiplier;
+            ScalerBar.Value -= e.Delta * scrollMultiplier;
         }
 
         private void PasteHandler(object sender, RoutedEventArgs e)
         {
-            wave.InsertSamples(cutSamples, (int)GetCursorPosition());
+            wave.InsertSamples(clipboard, (int)GetCursorPosition());
             UpdateScalerMax();
             UpdateScrollerMax();
             ClearCharts();
@@ -392,7 +435,7 @@ namespace WaveAnalyzer
             DFTHost.Child = dftChart;
 
             //short[][] deez2 = Windowing.Triangular(wave.Channels);
-            short[][] deez = Windowing.Hann(wave.Channels);
+            short[][] deez = Windowing.Triangular(wave.Channels);
 
             Complex[] test = Fourier.DFT(deez[0], SAMPLES_AT_A_TIME, 10000);
             Fourier.DivideByN(test, SAMPLES_AT_A_TIME);
@@ -413,11 +456,16 @@ namespace WaveAnalyzer
             //var sampleCursor = leftChart.ChartAreas[0].CursorX;
 
             //short[][] samplesToFilter = wave.ExtractSamples((int)sampleCursor.SelectionStart, (int)sampleCursor.SelectionEnd, true);
+
+            Wave filteredWave = new Wave();
+
             short[][] samplesToFilter = wave.ExtractSamples(10000, 30000, true);
+
+            filteredWave.Channels = samplesToFilter;
 
             //Filter.FilterRange((int)dftCursor.SelectionStart, (int)dftCursor.SelectionEnd, samplesToFilter);
             Filter.FilterRange(0, 10, wave.SampleRate, samplesToFilter);
-            wave.InsertSamples(samplesToFilter, 10000);
+            wave.InsertSamples(filteredWave, 10000);
 
             ClearCharts();
             RedrawWaves();
