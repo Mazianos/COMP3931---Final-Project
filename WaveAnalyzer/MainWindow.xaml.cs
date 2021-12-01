@@ -148,6 +148,8 @@ namespace WaveAnalyzer
 
             Trace.WriteLine("Done!");
 
+            DFTHost.Child = null;
+
             UpdateScalerMax();
             UpdateScrollerMax();
 
@@ -214,8 +216,6 @@ namespace WaveAnalyzer
                 ClearButton.IsEnabled = false;
                 DFTButton.IsEnabled = false;
                 PlayPauseIcon.Source = AppImage.PauseIcon;
-
-                Trace.WriteLine("wave " + wave.Subchunk2Size);
 
                 // Get the wave data in bytes starting at the cursor position.
                 byte[] data = wave.GetBytesFromChannels((int)GetCursorPosition());
@@ -447,7 +447,19 @@ namespace WaveAnalyzer
         {
             var dftCursor = dftChart.ChartAreas[0].CursorX;
 
-            Filter.FilterRange((int)dftCursor.SelectionStart, (int)dftCursor.SelectionEnd, dftChart.Series[0].Points.Count, 50, wave.SampleRate, wave.Channels);
+            int rangeStart = (int)dftCursor.SelectionStart;
+            int rangeEnd = (int)dftCursor.SelectionEnd;
+
+            if (rangeStart > dftChart.Width / 2)
+            {
+                rangeStart = dftChart.Width / 2;
+            }
+            if (rangeEnd > dftChart.Width / 2)
+            {
+                rangeEnd = dftChart.Width / 2;
+            }
+
+            Filter.FilterRange(rangeStart, rangeEnd, dftChart.Series[0].Points.Count, FilterSize, wave.SampleRate, wave.Channels);
 
             UpdateChartHeights();
             ClearCharts();

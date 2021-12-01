@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace WaveAnalyzer
 {
@@ -14,7 +16,7 @@ namespace WaveAnalyzer
             this.imag = imag;
         }
 
-        public static Complex operator+ (Complex a, Complex b)
+        public static Complex operator +(Complex a, Complex b)
         {
             return new Complex(a.real + b.real, a.imag + b.imag);
         }
@@ -36,22 +38,67 @@ namespace WaveAnalyzer
         public double Calculate(int t, int N) => amplitude * Math.Cos((frequency * 2 * Math.PI * t / N) + phaseShift);
     }
 
+    public struct ThreadData
+    {
+        public int first;
+        public int second;
+        public int N;
+        public short[] s;
+
+        public ThreadData(int first, int second, int N, short[] s)
+        {
+            this.first = first;
+            this.second = second;
+            this.N = N;
+            this.s = s;
+        }
+    }
+
     public static class Fourier
     {
         private const int DECIMAL_PLACES = 3;
+        private static Complex[] A;
 
-        public static Complex[] DFT(short[] s, int N, int start)
+        private static void DFTTask(object data)
         {
-            Complex[] A = new Complex[N];
+            ThreadData threadData = (ThreadData)data;
+            int first = threadData.first;
+            int second = threadData.second;
+            int N = threadData.N;
+            short[] s = threadData.s;
 
-            for (int f = 0; f < N; ++f)
+            for (int f = first; f < second; ++f)
             {
-                for (int t = start; t < N + start; t++)
+                for (int t = 0; t < N; t++)
                 {
                     A[f].real += s[t] * Math.Cos(2 * Math.PI * t * f / N);
                     A[f].imag -= s[t] * Math.Sin(2 * Math.PI * t * f / N);
                 }
             }
+        }
+
+        public static Complex[] DFT(short[] s, int N, int start)
+        {
+            A = new Complex[N];
+
+            int firstIndex = 0;
+            int secondIndex = 0;
+
+            Task[] tasks = new Task[5];
+
+            Action<object> action = DFTTask;
+
+            for (int i = 0; i < tasks.Length; ++i)
+            {
+                secondIndex += N / tasks.Length;
+
+                Task t = Task.Factory.StartNew(action, new ThreadData(firstIndex, secondIndex, N, s));
+                tasks[i] = t;
+
+                firstIndex = secondIndex;
+            }
+
+            Task.WaitAll(tasks);
 
             return A;
         }
@@ -113,10 +160,10 @@ namespace WaveAnalyzer
 
         public static double[] GetAmplitudes(Complex[] A)
         {
-            double[] amplitudes = new double[(A.Length / 2) + 1];
-            for (int i = 0; i < (A.Length / 2) + 1; ++i)
+            double[] amplitudes = new double[A.Length];
+            for (int i = 0; i < amplitudes.Length; ++i)
             {
-                amplitudes[i] = Pythagoras(A[i].real, A[i].imag) * 2;
+                amplitudes[i] = Pythagoras(A[i].real, A[i].imag);
             }
 
             return amplitudes;

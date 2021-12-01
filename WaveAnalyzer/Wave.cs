@@ -40,7 +40,6 @@ namespace WaveAnalyzer
         private const int defaultByteRate = 176400;
         private const short defaultBlockAlign = 2;
         private const short defaultBitsPerSample = 16;
-        
 
         public Wave()
         {
@@ -180,7 +179,11 @@ namespace WaveAnalyzer
             Array.Copy(ConstructWaveHeader(), newFileBytes, DefaultHeaderLength);
             Array.Copy(GetBytesFromChannels(0), 0, newFileBytes, DefaultHeaderLength, Subchunk2Size);
 
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            SaveFileDialog saveFileDialog = new SaveFileDialog()
+            {
+                DefaultExt = ".wav",
+                Filter = "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+            };
 
             if (saveFileDialog.ShowDialog() == true)
             {
