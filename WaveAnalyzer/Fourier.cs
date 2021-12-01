@@ -80,6 +80,9 @@ namespace WaveAnalyzer
 
         public static Complex[] DFT(short[] s, int N, int start)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
             A = new Complex[N];
 
             int firstIndex = 0;
@@ -98,6 +101,8 @@ namespace WaveAnalyzer
             }
 
             Task.WaitAll(tasks);
+            sw.Stop();
+            Trace.WriteLine("DFT took " + sw.ElapsedMilliseconds + " ms.");
 
             return A;
         }

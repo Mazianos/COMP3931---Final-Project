@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace WaveAnalyzer
@@ -152,6 +153,39 @@ namespace WaveAnalyzer
             dataIndex += 4;
         }
 
+        private byte[] RunLengthEncode(byte[] bytes)
+        {
+            List<byte> encode = new List<byte>();
+
+            byte currentByte = bytes[0];
+            int occurrences = 1;
+
+            for (int i = 1; i < bytes.Length; ++i)
+            {
+                if (bytes[i] == currentByte)
+                {
+                    ++occurrences;
+                }
+                else
+                {
+                    while (occurrences > 255)
+                    {
+                        encode.Add(255);
+                        encode.Add(currentByte);
+                        occurrences -= 255;
+                    }
+
+                    encode.Add((byte)occurrences);
+                    encode.Add(currentByte);
+
+                    currentByte = bytes[i];
+                    occurrences = 1;
+                }
+            }
+
+            return encode.ToArray();
+        }
+
         private byte[] ConstructWaveHeader()
         {
             byte[] waveHeader = new byte[DefaultHeaderLength];
@@ -175,9 +209,11 @@ namespace WaveAnalyzer
 
         public void Save()
         {
-            byte[] newFileBytes = new byte[Subchunk2Size + DefaultHeaderLength];
+            byte[] data = RunLengthEncode(GetBytesFromChannels(0));
+            byte[] newFileBytes = new byte[data.Length + DefaultHeaderLength];
+
+            Array.Copy(data, 0, newFileBytes, DefaultHeaderLength, data.Length);
             Array.Copy(ConstructWaveHeader(), newFileBytes, DefaultHeaderLength);
-            Array.Copy(GetBytesFromChannels(0), 0, newFileBytes, DefaultHeaderLength, Subchunk2Size);
 
             SaveFileDialog saveFileDialog = new SaveFileDialog()
             {
