@@ -61,6 +61,7 @@ namespace WaveAnalyzer
             RecordIcon.Source = AppImage.RecordIcon;
             ClearIcon.Source = AppImage.ClearIcon;
             DFTIcon.Source = AppImage.DFTIcon;
+            FilterIcon.Source = AppImage.FilterIcon;
         }
 
         private void SetupCommands()
@@ -215,6 +216,7 @@ namespace WaveAnalyzer
                 RecordButton.IsEnabled = false;
                 ClearButton.IsEnabled = false;
                 DFTButton.IsEnabled = false;
+                FilterButton.IsEnabled = DFTHost != null;
                 PlayPauseIcon.Source = AppImage.PauseIcon;
 
                 // Get the wave data in bytes starting at the cursor position.
@@ -258,6 +260,7 @@ namespace WaveAnalyzer
             SaveButton.IsEnabled = true;
             ClearButton.IsEnabled = true;
             DFTButton.IsEnabled = true;
+            FilterButton.IsEnabled = DFTHost != null;
 
             PlayPauseIcon.Source = AppImage.PlayIcon;
 
@@ -398,6 +401,7 @@ namespace WaveAnalyzer
             Hann.IsEnabled = false;
             Triang.IsEnabled = false;
             SaveButton.IsEnabled = false;
+            FilterButton.IsEnabled = false;
 
             UpdateScalerMax();
             UpdateScrollerMax();
@@ -441,6 +445,8 @@ namespace WaveAnalyzer
                 Fourier.DivideByN(rightChannel, samples[1].Length);
                 double[] rightAmplitudes = Fourier.GetAmplitudes(rightChannel);
             }
+
+            FilterButton.IsEnabled = true;
         }
 
         private void FilterHandler(object sender, RoutedEventArgs e)

@@ -15,5 +15,6 @@ namespace WaveAnalyzer
         public static ImageSource RecordIcon => (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\record.png"));
         public static ImageSource ClearIcon => (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\clear.png"));
         public static ImageSource DFTIcon => (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\dft.png"));
+        public static ImageSource FilterIcon => (ImageSource)converter.ConvertFrom(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\images\filter.png"));
     }
 }
