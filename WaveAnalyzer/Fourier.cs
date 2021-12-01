@@ -46,7 +46,7 @@ namespace WaveAnalyzer
 
             for (int f = 0; f < N; ++f)
             {
-                for (int t = start; t < N + start; ++t)
+                for (int t = start; t < N + start; t++)
                 {
                     A[f].real += s[t] * Math.Cos(2 * Math.PI * t * f / N);
                     A[f].imag -= s[t] * Math.Sin(2 * Math.PI * t * f / N);

@@ -118,6 +118,10 @@ namespace WaveAnalyzer
 
         public unsafe void OpenHandler(object sender, RoutedEventArgs e)
         {
+            PlayPauseButton.IsEnabled = true;
+            StopButton.IsEnabled = true;
+            Hann.IsEnabled = true;
+            Triang.IsEnabled = true;
             // Opens the open file dialog box.
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
@@ -241,6 +245,7 @@ namespace WaveAnalyzer
             SaveButton.IsEnabled = true;
             PlayPauseButton.IsEnabled = true;
             RecordButton.IsEnabled = true;
+            SaveButton.IsEnabled = true;
 
             PlayPauseIcon.Source = AppImage.PlayIcon;
 
@@ -289,6 +294,7 @@ namespace WaveAnalyzer
             SaveButton.IsEnabled = false;
             PlayPauseButton.IsEnabled = false;
             RecordButton.IsEnabled = false;
+            StopButton.IsEnabled = true;
 
             bRecording = true;
 
@@ -351,6 +357,13 @@ namespace WaveAnalyzer
         public void ClearHandler(object sender, RoutedEventArgs e)
         {
             wave = new Wave();
+            DFTHost.Child = null;
+
+            PlayPauseButton.IsEnabled = false;
+            StopButton.IsEnabled = false;
+            Hann.IsEnabled = false;
+            Triang.IsEnabled = false;
+            SaveButton.IsEnabled = false;
 
             UpdateScalerMax();
             UpdateScrollerMax();
@@ -372,38 +385,29 @@ namespace WaveAnalyzer
         }
 
         private const int SAMPLES_AT_A_TIME = 5000;
-        private void DFTHandler(object sender, RoutedEventArgs e)
+        private void DFTHandler(short[][] samples)
         {
-            /*Complex[] A = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, 0);
-            for (int i = 1; i < wave.Channels[0].Length / SAMPLES_AT_A_TIME; i++)
-            {
-                Complex[] A2 = Fourier.DFT(wave.Channels[0], SAMPLES_AT_A_TIME, i * SAMPLES_AT_A_TIME);
-                for (int j = 0; j < A.Length; j++)
-                {
-                    A[j] += A2[j];
-                }
-            }
-            Fourier.DivideByN(A, SAMPLES_AT_A_TIME);*/
-            //Fourier.PrintDoubles(Fourier.GetAmplitudes(A));
-            //Fourier.PrintComplex(A);
-
 
             dftChart = ChartCreator.CreateDFTChart();
             DFTHost.Child = dftChart;
 
-            //short[][] deez2 = Windowing.Triangular(wave.Channels);
-            short[][] deez = Windowing.Hann(wave.Channels);
+            Complex[] leftChannel = Fourier.DFT(samples[0], samples[0].Length, 0);
+            Fourier.DivideByN(leftChannel, samples[0].Length);
+            double[] leftAmplitudes = Fourier.GetAmplitudes(leftChannel);
 
-            Complex[] test = Fourier.DFT(deez[0], SAMPLES_AT_A_TIME, 10000);
-            Fourier.DivideByN(test, SAMPLES_AT_A_TIME);
+            dftChart.ChartAreas[0].AxisY.Maximum = (int)leftAmplitudes.Max() + 1;
 
-            double[] amplitudes = Fourier.GetAmplitudes(test);
-
-            dftChart.ChartAreas[0].AxisY.Maximum = (int)amplitudes.Max() + 1;
-
-            for (int i = 0; i < amplitudes.Length; ++i)
+            for (int i = 0; i < leftAmplitudes.Length; ++i)
             {
-                dftChart.Series[0].Points.AddXY(i, amplitudes[i]);
+                dftChart.Series[0].Points.AddXY(i, leftAmplitudes[i]);
+            }
+
+            //For 2 channels!
+            if (samples.Length == 2)
+            {
+                Complex[] rightChannel = Fourier.DFT(samples[1], samples.Length, 0);
+                Fourier.DivideByN(rightChannel, samples[1].Length);
+                double[] rightAmplitudes = Fourier.GetAmplitudes(rightChannel);
             }
         }
 
@@ -449,6 +453,30 @@ namespace WaveAnalyzer
             UpdateScrollerMax();
             ClearCharts();
             RedrawWaves();
+        }
+
+        private void Triang_Click(object sender, RoutedEventArgs e)
+        {
+
+            var cursor = leftChart.ChartAreas[0].CursorX;
+
+            short[][] temp = wave.ExtractSamples((int)(cursor.SelectionStart + WaveScroller.Value), (int)GetCursorPosition(), false);
+
+            temp = Windowing.Triangular(temp);
+
+            DFTHandler(temp);
+        }
+
+        private void Hann_Click(object sender, RoutedEventArgs e)
+        {
+
+            var cursor = leftChart.ChartAreas[0].CursorX;
+
+            short[][] temp = wave.ExtractSamples((int)(cursor.SelectionStart + WaveScroller.Value), (int)GetCursorPosition(), false);
+
+            temp = Windowing.Hann(temp);
+
+            DFTHandler(temp);
         }
     }
 }

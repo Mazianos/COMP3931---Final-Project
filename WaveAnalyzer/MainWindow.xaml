@@ -13,7 +13,7 @@
                 <Button Name="OpenButton" Click="OpenHandler">
                     <Image Name="OpenIcon"/>
                 </Button>
-                <Button Name="SaveButton" Click="SaveHandler">
+                <Button Name="SaveButton" Click="SaveHandler" IsEnabled="False">
                     <Image Name="SaveIcon"/>
                 </Button>
                 <Canvas Margin="50, 0, 0, 0">
@@ -26,17 +26,17 @@
                             </BulletDecorator>
                         </Expander.Header>
                         <StackPanel Background="#EEEEEE">
-                            <Button Content="Hannigrerng"/>
-                            <Button Content="Traignalluate"/>
+                            <Button Content="Hannigrerng" Name="Hann" Click="Hann_Click" IsEnabled="False"/>
+                            <Button Content="Traignalluate" Name="Triang" Click="Triang_Click" IsEnabled="False"/>
                         </StackPanel>
                     </Expander>
                 </Canvas>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Name="PlayPauseButton" Click="PlayPauseHandler">
+                <Button Name="PlayPauseButton" Click="PlayPauseHandler" IsEnabled="False">
                     <Image Name="PlayPauseIcon"/>
                 </Button>
-                <Button Name="StopButton" Click="StopHandler">
+                <Button Name="StopButton" Click="StopHandler" IsEnabled="False">
                     <Image Name="StopIcon"/>
                 </Button>
                 <Button Name="RecordButton" Click="RecordHandler">
@@ -60,9 +60,8 @@
                 <WindowsFormsHost Name="LeftHost" Margin="0, 40, 10, 0"/>
                 <WindowsFormsHost Name="RightHost" Margin="0, -10, 10, 0"/>
                 <ScrollBar Minimum="0" Maximum="0" Name="WaveScroller" Margin="40, 0, 50, 0" Orientation="Horizontal" Height="50" ValueChanged="WaveScrollHandler"/>
-                <WindowsFormsHost Name="DFTHost" Margin="0, 20, 10, 0"/>
-                <Button Content="DFT" Click="DFTHandler"/>
-                <Button Content="Filter" Click="FilterHandler"/>
+                    <WindowsFormsHost Name="DFTHost" Margin="0, 20, 10, 0"/>
+                    <Button Content="Filter" Click="FilterHandler"/>
             </StackPanel>
         </Grid>
     </StackPanel>
