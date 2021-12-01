@@ -31,10 +31,9 @@
                             </StackPanel>
                         </Expander>
                     </Canvas>
-                    <Button Margin="100, 0, 50, 0" x:Name="FilterButton" Click="FilterHandler" IsEnabled="False">
+                    <Button Margin="100, 0, 0, 0" x:Name="FilterButton" Click="FilterHandler" IsEnabled="False">
                         <Image x:Name="FilterIcon"/>
                     </Button>
-                    <TextBox Name="SampleEntry" Text="22050" TextWrapping="Wrap" Width="80"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button x:Name="PlayPauseButton" Click="PlayPauseHandler" IsEnabled="False">
@@ -46,6 +45,7 @@
                     <Button x:Name="RecordButton" Click="RecordHandler">
                         <Image x:Name="RecordIcon"/>
                     </Button>
+                    <TextBox Margin="50, 0, 0, 0" Name="SampleEntry" Text="22050" FontSize="20" MaxHeight="30" TextAlignment="Center" TextWrapping="Wrap" Width="80"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Slider Style="{DynamicResource VolumeSlider}" Maximum="100" Width="250" Value="50" HorizontalAlignment="Right" VerticalAlignment="Center"/>
