@@ -35,7 +35,6 @@ namespace WaveAnalyzer
             var axisY = area.AxisY;
             axisY.Minimum = -1;
             axisY.Maximum = 1;
-            axisY.LabelStyle.Enabled = false;
             axisY.MajorGrid.Enabled = false;
             axisY.ScrollBar.Enabled = true;
 
@@ -71,13 +70,13 @@ namespace WaveAnalyzer
 
             var axisX = area.AxisX;
             axisX.ScaleView.Zoomable = false;
-            //axisX.LabelStyle.Enabled = false;
+            axisX.LabelStyle.Enabled = false;
             axisX.MajorGrid.Enabled = false;
 
             var axisY = area.AxisY;
             axisY.Minimum = 0;
             axisY.Maximum = 2;
-            //axisY.LabelStyle.Enabled = false;
+            axisY.LabelStyle.Enabled = false;
             axisY.MajorGrid.Enabled = false;
 
             var cursorX = area.CursorX;

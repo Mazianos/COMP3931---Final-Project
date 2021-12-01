@@ -26,12 +26,15 @@
                             </BulletDecorator>
                         </Expander.Header>
                         <StackPanel Background="#EEEEEE">
-                            <Button Content="Hannigrerng" Name="Hann" Click="Hann_Click" IsEnabled="False"/>
-                            <Button Content="Traignalluate" Name="Triang" Click="Triang_Click" IsEnabled="False"/>
+                            <Button Content="Hann" Name="Hann" Click="Hann_Click" IsEnabled="False"/>
+                            <Button Content="Triangle" Name="Triang" Click="Triang_Click" IsEnabled="False"/>
                         </StackPanel>
                     </Expander>
                 </Canvas>
-            </StackPanel>
+                <Button Margin="100, 0, 0, 0" Name="FilterButton" Click="FilterHandler" IsEnabled="False">
+                    <Image Name="FilterIcon"/>
+                </Button>
+                </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Name="PlayPauseButton" Click="PlayPauseHandler" IsEnabled="False">
                     <Image Name="PlayPauseIcon"/>
@@ -61,8 +64,7 @@
                 <WindowsFormsHost Name="RightHost" Margin="0, -10, 10, 0"/>
                 <ScrollBar Minimum="0" Maximum="0" Name="WaveScroller" Margin="40, 0, 50, 0" Orientation="Horizontal" Height="50" ValueChanged="WaveScrollHandler"/>
                     <WindowsFormsHost Name="DFTHost" Margin="0, 20, 10, 0"/>
-                    <Button Content="Filter" Click="FilterHandler"/>
-            </StackPanel>
+                </StackPanel>
         </Grid>
     </StackPanel>
     </ScrollViewer>

@@ -4,7 +4,7 @@ namespace WaveAnalyzer
 {
     public static class Windowing
     {
-        private const short HannMultiplier = 1;
+        private const short HannMultiplier = 10;
 
         public static short[][] Hann(short[][] constSamples)
         {

@@ -12,35 +12,5 @@ namespace WaveAnalyzer
                 chart.Series[0].Points.AddXY(i, samples[i + offset]);
             }
         }
-
-        public short GetMinSample(short[] samples)
-        {
-            short minSample = 0;
-
-            foreach (short sample in samples)
-            {
-                if (sample < minSample)
-                {
-                    minSample = sample;
-                }
-            }
-
-            return minSample;
-        }
-
-        public short GetMaxSample(short[] samples)
-        {
-            short maxSample = 0;
-
-            foreach (short sample in samples)
-            {
-                if (sample > maxSample)
-                {
-                    maxSample = sample;
-                }
-            }
-
-            return maxSample;
-        }
     }
 }
