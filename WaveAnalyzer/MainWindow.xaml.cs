@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows.Threading;
 using System.Windows.Shapes;
 using System.ComponentModel;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WaveAnalyzer
 {

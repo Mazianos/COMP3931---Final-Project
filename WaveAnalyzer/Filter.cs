@@ -6,15 +6,15 @@ namespace WaveAnalyzer
     {
         public static void FilterRange(int binStart, int binEnd, int sampleRate, short[][] samplesToFilter)
         {
-            int samplesLength = samplesToFilter[0].Length;
+            int leftLength = samplesToFilter[0].Length;
             Complex[] A = CreateWeights(binStart, binEnd, sampleRate);
-            double[] weights = Fourier.InverseDFT(A, samplesLength);
+            double[] leftWeights = Fourier.InverseDFT(A, leftLength);
 
             for (int i = 0; i < samplesToFilter.Length; ++i)
             {
-                Array.Resize(ref samplesToFilter[i], samplesLength + weights.Length);
-                Convolution(samplesToFilter[i], weights);
-                Array.Resize(ref samplesToFilter[i], samplesLength);
+                Array.Resize(ref samplesToFilter[i], leftLength + leftWeights.Length);
+                Convolution(samplesToFilter[i], leftWeights);
+                Array.Resize(ref samplesToFilter[i], leftLength);
             }
         }
 
