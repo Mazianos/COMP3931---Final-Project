@@ -6,6 +6,11 @@ namespace WaveAnalyzer
     {
         private const short HannMultiplier = 1;
 
+        /// <summary>
+        /// Put the selected samples into a Hann window
+        /// </summary>
+        /// <param name="constSamples">Samples</param>
+        /// <returns>Samples in window</returns>
         public static short[][] Hann(short[][] constSamples)
         {
             short[][] samples = new short[constSamples.Length][];
@@ -22,6 +27,11 @@ namespace WaveAnalyzer
             return samples;
         }
 
+        /// <summary>
+        /// Put the selected samples into a Triangle window
+        /// </summary>
+        /// <param name="constSamples">Samples</param>
+        /// <returns>Samples in window</returns>
         public static short[][] Triangular(short[][] constSamples)
         {
             short[][] samples = new short[constSamples.Length][];

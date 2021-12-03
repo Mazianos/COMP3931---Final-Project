@@ -54,5 +54,4 @@ D:\COMP3931\Wave Analyzer\WaveAnalyzer\bin\Debug\netcoreapp3.1\runtimes\win-x86\
 D:\COMP3931\Wave Analyzer\WaveAnalyzer\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp2.1\System.Data.SqlClient.dll
 D:\COMP3931\Wave Analyzer\WaveAnalyzer\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll
 D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\App.baml
-D:\COMP3931\Wave Analyzer\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.csproj.CopyComplete
 C:\Users\Joshua\COMP3931---Final-Project\WaveAnalyzer\obj\Debug\netcoreapp3.1\WaveAnalyzer.csproj.CopyComplete

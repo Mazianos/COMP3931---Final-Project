@@ -3,6 +3,7 @@ using System.Windows.Media;
 
 namespace WaveAnalyzer
 {
+    // Holds our icons to reduce clutter.
     public static class AppImage
     {
         private static ImageSourceConverter converter = new ImageSourceConverter();

@@ -3,8 +3,15 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace WaveAnalyzer
 {
+    /// <summary>
+    /// Create charts
+    /// </summary>
     public static class ChartCreator
     {
+        /// <summary>
+        /// Create a new chart that displays a time domain graph of a wave
+        /// </summary>
+        /// <returns>Time domain chart that the user can interact with</returns>
         public static Chart CreateChart()
         {
             var chart = new Chart
@@ -47,6 +54,10 @@ namespace WaveAnalyzer
             return chart;
         }
 
+        /// <summary>
+        /// Create a chart that displays bars for a frequency domain graph of a wave or selection
+        /// </summary>
+        /// <returns>Frequency domain chart that the user can interact with</returns>
         public static Chart CreateDFTChart()
         {
             var chart = new Chart

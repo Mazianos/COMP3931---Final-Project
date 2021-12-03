@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace WaveAnalyzer
 {
+    /// <summary>
+    /// Imports the functions from ModelessDialog.dll
+    /// </summary>
     public static class ModelessDialog
     {
         [DllImport("ModelessDialog.dll")] public static extern IntPtr GetSaveBuffer();

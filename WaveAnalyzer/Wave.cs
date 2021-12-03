@@ -5,6 +5,9 @@ using System.IO;
 
 namespace WaveAnalyzer
 {
+    /// <summary>
+    /// Represents a wave
+    /// </summary>
     class Wave
     {
         private int chunkID;
@@ -44,6 +47,9 @@ namespace WaveAnalyzer
         private const short defaultBitsPerSample = 16;
         const uint MaxPatternLength = 10000;
 
+        /// <summary>
+        /// Create a default wave.
+        /// </summary>
         public Wave()
         {
             // Write "RIFF".
@@ -75,6 +81,10 @@ namespace WaveAnalyzer
             Channels = channels;
         }
 
+        /// <summary>
+        /// Create a wave that is a copy of another passed in wave.
+        /// </summary>
+        /// <param name="other">A wave to copy</param>
         public Wave(Wave other)
         {
             chunkID = other.chunkID;
@@ -92,6 +102,10 @@ namespace WaveAnalyzer
             Subchunk2Size = other.Subchunk2Size;
         }
 
+        /// <summary>
+        /// Create a wave using a .wav file
+        /// </summary>
+        /// <param name="filePath"></param>
         public Wave(string filePath)
         {
             byte[] data = File.ReadAllBytes(filePath);
@@ -108,6 +122,11 @@ namespace WaveAnalyzer
             Channels = GetChannelsFromBytes(ref data, samplesPerChannel, dataIndex, NumChannels);
         }
 
+        /// <summary>
+        /// Unencode our .rmle files
+        /// </summary>
+        /// <param name="data">Encoded array of data</param>
+        /// <returns>Unencoded array</returns>
         private byte[] UnencodeRMLE(ref byte[] data)
         {
             List<byte> unencoded = new List<byte>();
@@ -139,6 +158,10 @@ namespace WaveAnalyzer
             return unencoded.ToArray();
         }
 
+        /// <summary>
+        /// Create the wave header when saving
+        /// </summary>
+        /// <param name="data"></param>
         private void InitializeWaveHeader(ref byte[] data)
         {
             dataIndex = 0;
@@ -191,6 +214,11 @@ namespace WaveAnalyzer
             dataIndex += 4;
         }
 
+        /// <summary>
+        /// Encodes the wave, still lossy
+        /// </summary>
+        /// <param name="bytes">Unencoded data array</param>
+        /// <returns>Encoded data array</returns>
         private byte[] LawsyEncode(byte[] bytes)
         {
             List<byte> encode = new List<byte>();
@@ -270,6 +298,11 @@ namespace WaveAnalyzer
             return encode.ToArray();
         }
 
+        /// <summary>
+        /// Unencodes data array
+        /// </summary>
+        /// <param name="data">Encoded data array</param>
+        /// <returns>Unencoded data array</returns>
         private byte[] LawsyUnencode(ref byte[] data)
         {
             List<byte> unencoded = new List<byte>();
@@ -307,6 +340,11 @@ namespace WaveAnalyzer
             return unencoded.ToArray();
         }
 
+        /// <summary>
+        /// Encode array of data using MRLE
+        /// </summary>
+        /// <param name="bytes">Array of unencoded data</param>
+        /// <returns>Array of encoded data</returns>
         private byte[] ModifiedRunLengthEncode(byte[] bytes)
         {
             List<byte> encode = new List<byte>();
@@ -364,6 +402,10 @@ namespace WaveAnalyzer
             return encode.ToArray();
         }
 
+        /// <summary>
+        /// Creates the wave header for the .wav file
+        /// </summary>
+        /// <returns>The wave header in bytes</returns>
         private byte[] ConstructWaveHeader()
         {
             byte[] waveHeader = new byte[DefaultHeaderLength];
@@ -385,6 +427,9 @@ namespace WaveAnalyzer
             return waveHeader;
         }
 
+        /// <summary>
+        /// Save the wave as a .wav file
+        /// </summary>
         public void Save()
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog()
@@ -412,6 +457,14 @@ namespace WaveAnalyzer
             }
         }
 
+        /// <summary>
+        /// Put the data array into the proper channel short arrays
+        /// </summary>
+        /// <param name="data">Byte data array</param>
+        /// <param name="samplesPerChannel">Number of samples per channel</param>
+        /// <param name="dataStart">Start index of the data</param>
+        /// <param name="numChannels">Number of channels we put the data into</param>
+        /// <returns></returns>
         public static short[][] GetChannelsFromBytes(ref byte[] data, int samplesPerChannel, int dataStart, int numChannels)
         {
             short[][] channels = new short[numChannels][];
@@ -434,6 +487,11 @@ namespace WaveAnalyzer
             return channels;
         }
 
+        /// <summary>
+        /// Take the data as shorts from the channels and put them into a byte array
+        /// </summary>
+        /// <param name="startingSample">Starting sample index</param>
+        /// <returns></returns>
         public byte[] GetBytesFromChannels(int startingSample)
         {
             int start = Math.Max(0, startingSample);
@@ -453,11 +511,22 @@ namespace WaveAnalyzer
             return byteData;
         }
 
+        /// <summary>
+        /// Returns true if there is 1 channel
+        /// </summary>
+        /// <returns>Is there 1 channel?</returns>
         public bool IsMono()
         {
             return Channels.Length == 1;
         }
 
+        /// <summary>
+        /// Extract selected samples from the wave
+        /// </summary>
+        /// <param name="firstIndex">Starting index</param>
+        /// <param name="secondIndex">Ending index</param>
+        /// <param name="permanentlyModify">Permanently modify the array?</param>
+        /// <returns></returns>
         public short[][] ExtractSamples(int firstIndex, int secondIndex, bool permanentlyModify)
         {
             int start = Math.Min(firstIndex, secondIndex);
@@ -522,6 +591,11 @@ namespace WaveAnalyzer
             return extractedSamples;
         }
 
+        /// <summary>
+        /// Put samples back into the wave at the specified position
+        /// </summary>
+        /// <param name="wave">The wave we are putting into this wave</param>
+        /// <param name="position">The position we are inserting into</param>
         public void InsertSamples(Wave wave, int position)
         {
             if (wave == null) return;
@@ -596,6 +670,11 @@ namespace WaveAnalyzer
             Subchunk2Size = Channels[0].Length * 2 * NumChannels;
         }
 
+        /// <summary>
+        /// Upsample the samples to match the current sample rate
+        /// </summary>
+        /// <param name="samples">samples to upsample</param>
+        /// <returns>upsampled samples</returns>
         private short[][] UpSample(short[][] samples)
         {
             short[][] upSamples = new short[samples.Length][];
@@ -614,6 +693,11 @@ namespace WaveAnalyzer
             return upSamples;
         }
 
+        /// <summary>
+        /// Downsample the samples to match the current sample rate
+        /// </summary>
+        /// <param name="samples">samples to downsample</param>
+        /// <returns>downsampled samples</returns>
         private short[][] DownSample(short[][] samples)
         {
             short[][] downSamples = new short[samples.Length][];

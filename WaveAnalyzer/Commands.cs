@@ -2,6 +2,9 @@
 
 namespace WaveAnalyzer
 {
+    /// <summary>
+    /// Enables hotkeys to be used to cut, copy, paste, and delete from the time domain chart
+    /// </summary>
     public class Commands
     {
         public RoutedCommand Cut { get; private set; }

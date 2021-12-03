@@ -12,7 +12,7 @@ Purpose: Basic windows program. Creates a window with "Hello World"
 #include <wtypes.h>
 #include <winnt.h>
 
-
+//Constants defining message codes for the dialog box
 #define IDC_RECORD_BEG                  1000
 #define IDC_RECORD_END                  1001
 #define IDC_PLAY_BEG                    1002
@@ -26,6 +26,7 @@ Purpose: Basic windows program. Creates a window with "Hello World"
 
 BOOL CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
 
+// Variables used in the DlgProc
 TCHAR szAppName[] = TEXT("Record1");
 static HWND hDialog;
 static HMODULE hInstance;
@@ -40,12 +41,19 @@ static TCHAR        szOpenError[] = TEXT("Error opening waveform audio!");
 static TCHAR        szMemError[] = TEXT("Error allocating memory!");
 static WAVEFORMATEX waveform;
 static DWORD        msgLoop;
-static BOOL         stopped;
+static BOOL         stopped;    //Set when the wave reaches the end and stops playing, not set when paused.
 static int numChannels = 1;
 static int sampleRate = 44100;
 static int blockAlign = 2;
 static int bitsPerSample = 16;
 
+/// <summary>
+/// Capture the process HMODULE
+/// </summary>
+/// <param name="hModule">Process Handle</param>
+/// <param name="ul_reason_for_call">Called automatically when loading the dll</param>
+/// <param name="lpReserved">Unused</param>
+/// <returns></returns>
 BOOL APIENTRY DllMain(HMODULE hModule,
     DWORD  ul_reason_for_call,
     LPVOID lpReserved
@@ -55,6 +63,11 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     return TRUE;
 }
 
+/// <summary>
+/// Listen to the thread to capture any messages sent to the dialog box
+/// </summary>
+/// <param name="pParam">Unused</param>
+/// <returns>Unused</returns>
 DWORD WINAPI threadProc(PVOID pParam) {
     MSG msg;
     //messgae loop
@@ -66,6 +79,10 @@ DWORD WINAPI threadProc(PVOID pParam) {
     return 0;
 }
 
+/// <summary>
+/// Creates the invisible dialog box that handles sound processing
+/// </summary>
+/// <returns>Unused</returns>
 int start() {
     hDialog = CreateDialog(hInstance, TEXT("Record"), NULL, DlgProc);
 	if (-1 == hDialog)
@@ -81,7 +98,11 @@ int start() {
 	return 0;
 }
 
-
+/// <summary>
+/// Unused, reverses the data in pSaveBuffer to play the wave backwards
+/// </summary>
+/// <param name="pBuffer">Unused</param>
+/// <param name="iLength">Unused</param>
 void ReverseMemory(BYTE* pBuffer, int iLength)
 {
     BYTE b;
@@ -428,14 +449,31 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     return FALSE;
 }
 
+/// <summary>
+/// Get data
+/// </summary>
+/// <returns>data</returns>
 PBYTE GetSaveBuffer() {
     return pSaveBuffer;
 }
 
+/// <summary>
+/// Get length of data
+/// </summary>
+/// <returns>Length of data</returns>
 DWORD GetDWDataLength() {
     return dwDataLength;
 }
 
+/// <summary>
+/// Set the data of the WAVE struct
+/// </summary>
+/// <param name="buffer">Pointer to the data buffer</param>
+/// <param name="length">Lenth of the pointer to the data</param>
+/// <param name="channels">How many channels used</param>
+/// <param name="sRate">Sample rate</param>
+/// <param name="bAlign">Block align</param>
+/// <param name="bPerSample">Bits per sample</param>
 void SetWaveData(PBYTE buffer, DWORD length, int channels, int sRate, int bAlign, int bPerSample) {
     dwDataLength = length;
     numChannels = channels;
@@ -451,39 +489,68 @@ void SetWaveData(PBYTE buffer, DWORD length, int channels, int sRate, int bAlign
     pSaveBuffer = newPSaveBuffer;
 }
 
+/// <summary>
+/// Reverse the data in pSaveBuffer
+/// </summary>
 void ReverseMemoryFunct()
 {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_PLAY_REV, 0), 0);
 }
 
+/// <summary>
+/// Start the wave and create the dialog box
+/// </summary>
 void InitWave() {
     start();
 }
 
+/// <summary>
+/// Begin recording
+/// </summary>
 void BeginRecord() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_RECORD_BEG, 0), 0);
 }
 
+/// <summary>
+/// Stop recording
+/// </summary>
 void EndRecord() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_RECORD_END, 0), 0);
 }
 
+/// <summary>
+/// Pause or unpause the recording
+/// </summary>
 void PausePlay() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_PLAY_PAUSE, 0), 0);
 }
 
+/// <summary>
+/// Start playing the wave in pSaveBuffer
+/// </summary>
 void BeginPlay() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_PLAY_BEG, 0), 0);
 }
 
+/// <summary>
+/// Stop playing the wave
+/// </summary>
 void EndPlay() {
     SendMessage(hDialog, WM_COMMAND, MAKEWPARAM(IDC_PLAY_END, 0), 0);
 }
 
+/// <summary>
+/// Check if the stopped boolean is true
+/// </summary>
+/// <returns>Stopped boolean</returns>
 BOOL checkStopped() {
     return stopped;
 }
 
+/// <summary>
+/// Set the value of the stopped boolean
+/// </summary>
+/// <param name="isStopped">New value for stopped</param>
 void setStopped(BOOL isStopped) {
     stopped = isStopped;
 }

@@ -2,6 +2,7 @@
 
 namespace WaveAnalyzer
 {
+    //Used to set the colour of charts in ChartCreator.cs
     public static class AppColor
     {
         public static System.Drawing.Color WaveColor { get => waveColor; private set => waveColor = value; }
@@ -11,6 +12,7 @@ namespace WaveAnalyzer
 
         private static System.Drawing.Color waveColor = System.Drawing.Color.FromArgb(248, 175, 96);
 
+        // Colour of area selected
         private static Color selectionColor = new Color()
         {
             R = 96,
@@ -19,6 +21,7 @@ namespace WaveAnalyzer
             A = 255
         };
 
+        // Colour of cursor along chart/wave
         private static Color selectorColor = new Color()
         {
             R = 255,

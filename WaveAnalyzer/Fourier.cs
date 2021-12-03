@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace WaveAnalyzer
 {
+    /// <summary>
+    /// A complex number
+    /// </summary>
     public struct Complex
     {
         public double real;
@@ -22,6 +25,9 @@ namespace WaveAnalyzer
         }
     }
 
+    /// <summary>
+    /// A cosine wave
+    /// </summary>
     public struct CosWave
     {
         public double amplitude;
@@ -38,6 +44,9 @@ namespace WaveAnalyzer
         public double Calculate(int t, int N) => amplitude * Math.Cos((frequency * 2 * Math.PI * t / N) + phaseShift);
     }
 
+    /// <summary>
+    /// Data needed by the thread to complete DFT
+    /// </summary>
     public struct ThreadData
     {
         public int first;
@@ -54,12 +63,19 @@ namespace WaveAnalyzer
         }
     }
 
+    /// <summary>
+    /// Methods used to perform DFT and IDFT
+    /// </summary>
     public static class Fourier
     {
         private const int DECIMAL_PLACES = 3;
         private const int Threads = 5;
         private static Complex[] A;
 
+        /// <summary>
+        /// DFT executed by a thread
+        /// </summary>
+        /// <param name="data">Portion of data passed to the thread to DFT</param>
         private static void DFTTask(object data)
         {
             ThreadData threadData = (ThreadData)data;
@@ -78,6 +94,13 @@ namespace WaveAnalyzer
             }
         }
 
+        /// <summary>
+        /// DFT an array of samples
+        /// </summary>
+        /// <param name="s">Array of samples to DFT</param>
+        /// <param name="N">Number of samples we DFT</param>
+        /// <param name="start">Unused</param>
+        /// <returns></returns>
         public static Complex[] DFT(short[] s, int N, int start)
         {
             Stopwatch sw = new Stopwatch();
@@ -107,6 +130,12 @@ namespace WaveAnalyzer
             return A;
         }
 
+        /// <summary>
+        /// Undo that DFT
+        /// </summary>
+        /// <param name="A">Array of frequencies</param>
+        /// <param name="N">Number of samples we IDFT</param>
+        /// <returns></returns>
         public static double[] InverseDFT(Complex[] A, int N)
         {
             double[] s = new double[N];
@@ -123,37 +152,10 @@ namespace WaveAnalyzer
             return s;
         }
 
-        public static Complex[] HalfFourier(double[] s, int N)
-        {
-            Complex[] A = new Complex[N];
-
-            for (int f = 0; f < N; ++f)
-            {
-                for (int t = 0; t < N; ++t)
-                {
-                    A[f].real += s[t] * Math.Cos(2 * Math.PI * t * f / N);
-                }
-            }
-
-            return A;
-        }
-
-        public static void PrintDoubles(double[] s)
-        {
-            for (int i = 0; i < s.Length; ++i)
-            {
-                Trace.WriteLine("[" + i + "]\t" + Math.Round(s[i], DECIMAL_PLACES));
-            }
-        }
-
-        public static void PrintShorts(short[] s)
-        {
-            for (int i = 0; i < s.Length; ++i)
-            {
-                Trace.WriteLine(s[i]);
-            }
-        }
-
+        /// <summary>
+        /// Prints array of complex nums to the console
+        /// </summary>
+        /// <param name="A">Array of complex nums</param>
         public static void PrintComplex(Complex[] A)
         {
             for (int i = 0; i < A.Length; ++i)
@@ -162,6 +164,11 @@ namespace WaveAnalyzer
             }
         }
 
+        /// <summary>
+        /// Get the amplitudes of the frequencies
+        /// </summary>
+        /// <param name="A">Array of frequencies</param>
+        /// <returns></returns>
         public static double[] GetAmplitudes(Complex[] A)
         {
             double[] amplitudes = new double[A.Length];
@@ -173,26 +180,22 @@ namespace WaveAnalyzer
             return amplitudes;
         }
 
+        /// <summary>
+        /// Does a^2 + b^2 = c^2
+        /// </summary>
+        /// <param name="x">a</param>
+        /// <param name="y">b</param>
+        /// <returns></returns>
         public static double Pythagoras(double x, double y)
         {
             return Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
         }
 
-        public static double[] GetSamples(CosWave[] cosWaves, int N)
-        {
-            double[] samples = new double[N];
-
-            for (int t = 0; t < samples.Length; ++t)
-            {
-                for (int j = 0; j < cosWaves.Length; ++j)
-                {
-                    samples[t] += cosWaves[j].Calculate(t, N);
-                }
-            }
-
-            return samples;
-        }
-
+        /// <summary>
+        /// Divide the entire array by N
+        /// </summary>
+        /// <param name="A">Array of complex numbers</param>
+        /// <param name="N">Length of the array</param>
         public static void DivideByN(Complex[] A, int N)
         {
             for (int i = 0; i < A.Length; ++i)
@@ -201,19 +204,5 @@ namespace WaveAnalyzer
                 A[i].imag /= N;
             }
         }
-
-        public static double[] GetPhaseShifts(Complex[] A)
-        {
-            double[] phaseShifts = new double[A.Length];
-
-            for (int i = 0; i < A.Length; ++i)
-            {
-                phaseShifts[i] = ToDegrees(Math.Atan2(A[i].imag, A[i].real));
-            }
-
-            return phaseShifts;
-        }
-
-        public static double ToDegrees(double radians) => radians * 180 / Math.PI;
     }
 }

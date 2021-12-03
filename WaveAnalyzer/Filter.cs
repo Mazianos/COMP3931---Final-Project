@@ -4,6 +4,15 @@ namespace WaveAnalyzer
 {
     public static class Filter
     {
+        /// <summary>
+        /// Filter the user selection 
+        /// </summary>
+        /// <param name="start">Starting bin index</param>
+        /// <param name="end">Ending bin index</param>
+        /// <param name="bins">Number of bins used in the dft</param>
+        /// <param name="filterSize">Length of filter weights used</param>
+        /// <param name="sampleRate">Sample rate of the wave</param>
+        /// <param name="samplesToFilter">Buffer of data that we are filtering</param>
         public static void FilterRange(int start, int end, int bins, int filterSize, int sampleRate, short[][] samplesToFilter)
         {
             int binStart = Math.Min(start, end);
@@ -25,6 +34,14 @@ namespace WaveAnalyzer
             }
         }
 
+        /// <summary>
+        /// Create the filter weights used for convolution
+        /// </summary>
+        /// <param name="hzStart">Starting frequency</param>
+        /// <param name="hzEnd">Ending frequency</param>
+        /// <param name="sampleRate">Sample rate of the wave</param>
+        /// <param name="filterSize">Length of the filter weight array</param>
+        /// <returns>Filter Weights in frequency domain</returns>
         public static Complex[] CreateWeights(int hzStart, int hzEnd, int sampleRate, int filterSize)
         {
             int binStart = hzStart * filterSize / sampleRate;
@@ -59,6 +76,11 @@ namespace WaveAnalyzer
             return weights;
         }
 
+        /// <summary>
+        /// Convolve the data passed in using the weights passed in
+        /// </summary>
+        /// <param name="s">Data passed in</param>
+        /// <param name="weights">Array of filter weights in time domain</param>
         public static void Convolution(short[] s, double[] weights)
         {
             for (int i = 0; i < s.Length - weights.Length; ++i)

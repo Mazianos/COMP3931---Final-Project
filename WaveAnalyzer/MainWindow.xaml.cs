@@ -7,9 +7,8 @@ using System.Windows.Input;
 using System.Windows.Controls;
 using System.Threading;
 using System.Windows.Threading;
-using System.Windows.Shapes;
-using System.ComponentModel;
 using System.Windows.Forms.DataVisualization.Charting;
+//564 lines before adding comments
 
 namespace WaveAnalyzer
 {
@@ -19,29 +18,30 @@ namespace WaveAnalyzer
         private Chart rightChart;
         private Chart dftChart;
 
-        private Wave wave;
-        private WaveDrawer waveDrawer;
-        private WaveZoomer waveZoomer;
-        private Commands commands;
-        private Thread stopListener;
-        private delegate void stopButtonDelegate();
-        private bool bRecording;
-        private bool bPlaying;
-        private bool bPaused = false;
-        private static bool die = false;
-        private Wave clipboard;
-        private const int WaveHeightPadding = 1000;
-        private const float IncrementerMultiplier = 0.001f;
-        private const float ScrollIntensityMultiplier = 0.0005f;
-        private int scrollMultiplier = 1;
-        private const int FilterSize = 50;
+        private Wave wave;                                          // Currently loaded wave
+        private WaveDrawer waveDrawer;                              // Draws the currently loaded wave
+        private Commands commands;                                  // Enables hotkeys to be used
+        private Thread stopListener;                                // Waits for the wave to stop before resetting the window
+        private delegate void stopButtonDelegate();                 // Allows the stopListener to tell the main window that the wave has stopped
+        private bool bRecording;                                    // Are we recording?
+        private bool bPlaying;                                      // Are we playing?
+        private bool bPaused = false;                               // Are we paused?
+        private static bool die = false;                            // Should the stopListener finish?
+        private Wave clipboard;                                     // Wave being saved in our clipboard
+        private const int WaveHeightPadding = 1000;                 // Pads space in y axis
+        private const float IncrementerMultiplier = 0.001f;         // Helps determine how many samples are drawn per pixel
+        private const float ScrollIntensityMultiplier = 0.0005f;    // Helps determine how much we zoom at a time
+        private int scrollMultiplier = 1;                           // Default value for how much we zoom at a time
+        private const int FilterSize = 50;                          // Default value for how many samples we filter at a time
 
+        /// <summary>
+        /// Initialize the window, wave, waveDrawer, icons, hotkeys/shortcuts, recorder, and charts
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
 
             waveDrawer = new WaveDrawer();
-            waveZoomer = new WaveZoomer();
             commands = new Commands();
             wave = new Wave();
 
@@ -52,6 +52,9 @@ namespace WaveAnalyzer
             ModelessDialog.InitWave();
         }
 
+        /// <summary>
+        /// Sets the icons
+        /// </summary>
         private void SetIconImages()
         {
             OpenIcon.Source = AppImage.OpenIcon;
@@ -64,6 +67,9 @@ namespace WaveAnalyzer
             FilterIcon.Source = AppImage.FilterIcon;
         }
 
+        /// <summary>
+        /// Sets the hotkeys/shortcuts
+        /// </summary>
         private void SetupCommands()
         {
             CommandBindings.Add(new CommandBinding(commands.Cut, CutCopyDeleteHandler));
@@ -72,6 +78,9 @@ namespace WaveAnalyzer
             CommandBindings.Add(new CommandBinding(commands.Copy, CutCopyDeleteHandler));
         }
 
+        /// <summary>
+        /// Initializes the charts
+        /// </summary>
         private void SetupCharts()
         {
             leftChart = ChartCreator.CreateChart();
@@ -87,6 +96,11 @@ namespace WaveAnalyzer
             rightChart.MouseWheel += ScaleCharts;
         }
 
+        /// <summary>
+        /// Allows the user to select portions of the charts
+        /// </summary>
+        /// <param name="sender">Which chart was selected</param>
+        /// <param name="e">Event that triggered this</param>
         private void ChartSelectionHandler(object sender, CursorEventArgs e)
         {
             if (sender == leftChart)
@@ -101,6 +115,11 @@ namespace WaveAnalyzer
             }
         }
 
+        /// <summary>
+        /// Ensures that the red lines on both time-domain wave graphs are synchronized
+        /// </summary>
+        /// <param name="start">Starting position</param>
+        /// <param name="end">Ending position</param>
         private void SyncCursors(double start, double end)
         {
             var cursorX = leftChart.ChartAreas[0].CursorX;
@@ -114,11 +133,20 @@ namespace WaveAnalyzer
             cursorX.Position = end;
         }
 
+        /// <summary>
+        /// Get where the cursor is at the moment
+        /// </summary>
+        /// <returns>Current cursor location</returns>
         private double GetCursorPosition()
         {
             return leftChart.ChartAreas[0].CursorX.SelectionEnd + WaveScroller.Value;
         }
 
+        /// <summary>
+        /// Open a file
+        /// </summary>
+        /// <param name="sender">Open button</param>
+        /// <param name="e">Event that called this</param>
         public unsafe void OpenHandler(object sender, RoutedEventArgs e)
         {
             PlayPauseButton.IsEnabled = true;
@@ -167,6 +195,9 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
+        /// <summary>
+        /// Update max length of wave displayed
+        /// </summary>
         private void UpdateScalerMax()
         {
             if (wave == null) return;
@@ -175,6 +206,9 @@ namespace WaveAnalyzer
             scrollMultiplier = (int)(wave.Channels[0].Length * ScrollIntensityMultiplier);
         }
 
+        /// <summary>
+        /// Update max height of wave displayed
+        /// </summary>
         private void UpdateChartHeights()
         {
             if (leftChart == null) return;
@@ -198,6 +232,9 @@ namespace WaveAnalyzer
             axisX = rightChart.ChartAreas[0].AxisX;
         }
 
+        /// <summary>
+        /// Update current scroll bar
+        /// </summary>
         private void UpdateScrollerMax()
         {
             if (wave == null || leftChart == null || WaveScroller == null || ScalerBar == null) return;
@@ -210,14 +247,22 @@ namespace WaveAnalyzer
             }
         }
 
+        /// <summary>
+        /// Save a file
+        /// </summary>
+        /// <param name="sender">Save button</param>
+        /// <param name="e">Event that called this</param>
         private void SaveHandler(object sender, RoutedEventArgs e)
         {
             wave.Save();
         }
 
-        /**
-         * Play/Pause Wave
-         */
+
+        /// <summary>
+        /// Play the current wave OR resume/pause the wave appropriately
+        /// </summary>
+        /// <param name="sender">Play/Pause button</param>
+        /// <param name="e">Event that called this</param>
         public unsafe void PlayPauseHandler(object sender, RoutedEventArgs e)
         {
             if (!bPlaying)
@@ -247,23 +292,37 @@ namespace WaveAnalyzer
             }
             else
             {
-                PlayPauseIcon.Source = AppImage.PlayIcon;
-                OpenButton.IsEnabled = true;
-                SaveButton.IsEnabled = true;
-                PlayPauseButton.IsEnabled = true;
-                RecordButton.IsEnabled = true;
-                ClearButton.IsEnabled = true;
-                DFTButton.IsEnabled = true;
-
+                if (bPaused)
+                {
+                    OpenButton.IsEnabled = false;
+                    SaveButton.IsEnabled = false;
+                    RecordButton.IsEnabled = false;
+                    ClearButton.IsEnabled = false;
+                    DFTButton.IsEnabled = false;
+                    FilterButton.IsEnabled = DFTHost != null;
+                    PlayPauseIcon.Source = AppImage.PauseIcon;
+                }
+                else
+                {
+                    PlayPauseIcon.Source = AppImage.PlayIcon;
+                    OpenButton.IsEnabled = true;
+                    SaveButton.IsEnabled = true;
+                    PlayPauseButton.IsEnabled = true;
+                    RecordButton.IsEnabled = true;
+                    ClearButton.IsEnabled = true;
+                    DFTButton.IsEnabled = true;
+                }
                 bPaused = !bPaused;
 
                 ModelessDialog.PausePlay();
             }
         }
 
-        /**
-         * Stops Playing Wave
-         */
+        /// <summary>
+        /// Stop playing a wave OR stop recording, reset the button statuses
+        /// </summary>
+        /// <param name="sender">Stop button</param>
+        /// <param name="e">Event that called this</param>
         public unsafe void StopHandler(object sender, RoutedEventArgs e)
         {
             OpenButton.IsEnabled = true;
@@ -299,6 +358,7 @@ namespace WaveAnalyzer
                 {
                     wave.InsertSamples(recordedWave, (int)GetCursorPosition());
                 }
+                bPaused = false;
 
                 UpdateScalerMax();
                 UpdateScrollerMax();
@@ -317,9 +377,11 @@ namespace WaveAnalyzer
             bRecording = false;
         }
 
-        /**
-         * Start Recording
-         */
+        /// <summary>
+        /// Begin Recording
+        /// </summary>
+        /// <param name="sender">Record button</param>
+        /// <param name="e">Event that called this</param>
         public unsafe void RecordHandler(object sender, RoutedEventArgs e)
         {
             OpenButton.IsEnabled = false;
@@ -340,6 +402,9 @@ namespace WaveAnalyzer
             ModelessDialog.BeginRecord();
         }
 
+        /// <summary>
+        /// Clear all charts, removing all points from them
+        /// </summary>
         private void ClearCharts()
         {
             if (leftChart == null) return;
@@ -349,6 +414,9 @@ namespace WaveAnalyzer
             rightChart.Series[0].Points.Clear();
         }
 
+        /// <summary>
+        /// Redraw the wave(s) on the appropriate charts
+        /// </summary>
         private void RedrawWaves()
         {
             if (wave == null) return;
@@ -377,7 +445,7 @@ namespace WaveAnalyzer
 
             int rate;
             string time;
-            if (wave.Subchunk2Size / (wave.BitsPerSample / 8) < 120)
+            if (wave.Subchunk2Size / (wave.BitsPerSample / 8) / wave.SampleRate < 120)
             {
                 rate = wave.SampleRate;
                 time = "Seconds";
@@ -404,12 +472,22 @@ namespace WaveAnalyzer
             axisX.Title = time;
         }
 
+        /// <summary>
+        /// Move a wave along the chart
+        /// </summary>
+        /// <param name="sender">The scroll bar being moved</param>
+        /// <param name="e">Event sending this</param>
         private void WaveScrollHandler(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             ClearCharts();
             RedrawWaves();
         }
 
+        /// <summary>
+        /// Handle hotkeys
+        /// </summary>
+        /// <param name="sender">Unused</param>
+        /// <param name="e">Command that called this</param>
         private void CutCopyDeleteHandler(object sender, ExecutedRoutedEventArgs e)
         {
             var cursor = leftChart.ChartAreas[0].CursorX;
@@ -431,6 +509,12 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
+
+        /// <summary>
+        /// Clear the charts and reset the buttons
+        /// </summary>
+        /// <param name="sender">Clear button</param>
+        /// <param name="e">Event that called this</param>
         public void ClearHandler(object sender, RoutedEventArgs e)
         {
             wave = new Wave();
@@ -448,11 +532,21 @@ namespace WaveAnalyzer
             ClearCharts();
         }
 
+        /// <summary>
+        /// Scale the charts according to the current scroll bar positions
+        /// </summary>
+        /// <param name="sender">Unused</param>
+        /// <param name="e"></param>
         private void ScaleCharts(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             ScalerBar.Value -= e.Delta * scrollMultiplier;
         }
 
+        /// <summary>
+        /// Paste the wave in the clipboard to the wave on the chart
+        /// </summary>
+        /// <param name="sender">Unused</param>
+        /// <param name="e">Unused</param>
         private void PasteHandler(object sender, RoutedEventArgs e)
         {
             wave.InsertSamples(clipboard, (int)GetCursorPosition());
@@ -462,6 +556,10 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
+        /// <summary>
+        /// DFT selected samples and display them on the chart
+        /// </summary>
+        /// <param name="samples">Array of samples to DFT</param>
         private void DFTHandler(short[][] samples)
         {
             dftChart = ChartCreator.CreateDFTChart();
@@ -489,6 +587,11 @@ namespace WaveAnalyzer
             FilterButton.IsEnabled = true;
         }
 
+        /// <summary>
+        /// Filter the selected frequencies
+        /// </summary>
+        /// <param name="sender">Filter button</param>
+        /// <param name="e">Click event</param>
         private void FilterHandler(object sender, RoutedEventArgs e)
         {
             var dftCursor = dftChart.ChartAreas[0].CursorX;
@@ -512,11 +615,17 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
+        /// <summary>
+        /// Used in a delegate to press the stop button on the main window
+        /// </summary>
         private void PressStop()
         {
             StopButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
 
+        /// <summary>
+        /// Threadproc used to listen for the end of the wave being played.
+        /// </summary>
         private void Listen()
         {
             while (!die)
@@ -533,6 +642,11 @@ namespace WaveAnalyzer
             return;
         }
 
+        /// <summary>
+        /// Scale the waves, clear the charts and redraw the waves
+        /// </summary>
+        /// <param name="sender">Scrollbar</param>
+        /// <param name="e">Unused</param>
         private void ScalerHandler(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             UpdateScrollerMax();
@@ -540,6 +654,11 @@ namespace WaveAnalyzer
             RedrawWaves();
         }
 
+        /// <summary>
+        /// Window the selected samples using a Triangle window
+        /// </summary>
+        /// <param name="sender">Triangle Window Button</param>
+        /// <param name="e">Click event</param>
         private void Triang_Click(object sender, RoutedEventArgs e)
         {
             var cursor = leftChart.ChartAreas[0].CursorX;
@@ -551,6 +670,11 @@ namespace WaveAnalyzer
             DFTHandler(temp);
         }
 
+        /// <summary>
+        /// Window the selected samples using a Hann window
+        /// </summary>
+        /// <param name="sender">Hann Window Button</param>
+        /// <param name="e">Click event</param>
         private void Hann_Click(object sender, RoutedEventArgs e)
         {
             var cursor = leftChart.ChartAreas[0].CursorX;
