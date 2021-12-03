@@ -100,7 +100,7 @@ namespace WaveAnalyzer
 
             if (Path.GetExtension(filePath) == ".rmle")
             {
-                data = Unencode(ref data);
+                data = LawsyUnencode(ref data);
             }
 
             // Initialize the channels 2D array where each row is a channel and every column is a sample.
