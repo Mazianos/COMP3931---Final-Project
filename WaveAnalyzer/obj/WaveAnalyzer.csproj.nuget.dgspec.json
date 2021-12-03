@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj": {}
+    "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj": {}
   },
   "projects": {
-    "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj": {
+    "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj",
+        "projectUniqueName": "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj",
         "projectName": "WaveAnalyzer",
-        "projectPath": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj",
-        "packagesPath": "C:\\Users\\mazin\\.nuget\\packages\\",
-        "outputPath": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\obj\\",
+        "projectPath": "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj",
+        "packagesPath": "C:\\Users\\Joshua\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\mazin\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\Joshua\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -26,6 +22,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "E:\\Desktop": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {

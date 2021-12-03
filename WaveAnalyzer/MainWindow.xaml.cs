@@ -129,7 +129,7 @@ namespace WaveAnalyzer
             // Opens the open file dialog box.
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Filter = "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+                Filter = "WAV files (*.wav)|*.wav|Modified RLE files (*.rmle)|*.rmle|All files (*.*)|*.*"
             };
 
             // Returns true when a file is opened. Return if not opened.

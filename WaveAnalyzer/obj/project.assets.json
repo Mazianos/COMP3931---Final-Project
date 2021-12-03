@@ -1618,7 +1618,7 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj",
+      "projectUniqueName": "C:\\Users\\Joshua\\COMP3931---Final-Project\\WaveAnalyzer\\WaveAnalyzer.csproj",
       "projectName": "WaveAnalyzer",
       "projectPath": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj",
       "packagesPath": "C:\\Users\\mazin\\.nuget\\packages\\",
@@ -1637,6 +1637,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "E:\\Desktop": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
