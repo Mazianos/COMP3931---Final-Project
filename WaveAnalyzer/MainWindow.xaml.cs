@@ -183,11 +183,19 @@ namespace WaveAnalyzer
             axisY.Minimum = wave.Channels[0].Min() - WaveHeightPadding;
             axisY.Maximum = wave.Channels[0].Max() + WaveHeightPadding;
 
+            var axisX = leftChart.ChartAreas[0].AxisX;
+            TickMark tm = new TickMark();
+            tm.Size = wave.SampleRate;
+            axisX.MajorGrid.Enabled = true;
+            axisX.MajorTickMark = tm;
+
             if (wave.IsMono()) return;
 
             axisY = rightChart.ChartAreas[0].AxisY;
             axisY.Minimum = wave.Channels[1].Min() - WaveHeightPadding;
             axisY.Maximum = wave.Channels[1].Max() + WaveHeightPadding;
+
+            axisX = rightChart.ChartAreas[0].AxisX;
         }
 
         private void UpdateScrollerMax()
@@ -366,9 +374,34 @@ namespace WaveAnalyzer
             }
 
             waveDrawer.DrawWave(wave.Channels[0], ref leftChart, (int)WaveScroller.Value, leftChart.Width + ScalerBar.Value, incrementer);
-            
+
+            int rate;
+            string time;
+            if (wave.Subchunk2Size / (wave.BitsPerSample / 8) < 120)
+            {
+                rate = wave.SampleRate;
+                time = "Seconds";
+            }
+            else
+            {
+                rate = wave.SampleRate * 60;
+                time = "Minutes";
+            }
+
+            var axisX = leftChart.ChartAreas[0].AxisX;
+            axisX.MajorTickMark = new TickMark();
+            axisX.MajorTickMark.Size = 3;
+            axisX.MajorTickMark.Interval = rate;
+            axisX.Title = time;
+
             if (wave.IsMono()) return;
             waveDrawer.DrawWave(wave.Channels[1], ref rightChart, (int)WaveScroller.Value, rightChart.Width + ScalerBar.Value, incrementer);
+
+            axisX = rightChart.ChartAreas[0].AxisX;
+            axisX.MajorTickMark = new TickMark();
+            axisX.MajorTickMark.Size = 3;
+            axisX.MajorTickMark.Interval = rate;
+            axisX.Title = time;
         }
 
         private void WaveScrollHandler(object sender, RoutedPropertyChangedEventArgs<double> e)

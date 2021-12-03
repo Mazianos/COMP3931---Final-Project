@@ -30,7 +30,7 @@ namespace WaveAnalyzer
             axisX.ScrollBar.Enabled = false;
             axisX.ScaleView.Zoomable = false;
             axisX.LabelStyle.Enabled = false;
-            axisX.MajorGrid.Enabled = false;
+            axisX.IsStartedFromZero = true;
 
             var axisY = area.AxisY;
             axisY.Minimum = -1;

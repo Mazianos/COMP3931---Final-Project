@@ -1612,8 +1612,9 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\mazin\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Mazianos\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
@@ -1621,14 +1622,15 @@
       "projectUniqueName": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj",
       "projectName": "WaveAnalyzer",
       "projectPath": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\WaveAnalyzer.csproj",
-      "packagesPath": "C:\\Users\\mazin\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\Mazianos\\.nuget\\packages\\",
       "outputPath": "D:\\COMP3931\\Wave Analyzer\\WaveAnalyzer\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\mazin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Mazianos\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -1684,6 +1686,12 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[3.1.19, 3.1.19]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
@@ -1692,7 +1700,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.402\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.401\\RuntimeIdentifierGraph.json"
       }
     }
   }
