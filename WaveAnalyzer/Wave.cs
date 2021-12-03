@@ -25,6 +25,7 @@ namespace WaveAnalyzer
         private short dataIndex;
 
         private const short DefaultHeaderLength = 44;
+        private const byte key = 254;
 
         // Predetermined WAV header values.
         private const int RIFF = 0x52494646;
@@ -44,6 +45,9 @@ namespace WaveAnalyzer
 
         public Wave()
         {
+            System.Diagnostics.Trace.WriteLine(string.Join(",", Encode(new byte[] { 0, 1, 2, 5, 3, 0, 0, 1, 2, 3, 5, 5, })));
+
+
             // Write "RIFF".
             chunkID = RIFF;
             chunkSize = defaultChunkSize;
@@ -96,10 +100,46 @@ namespace WaveAnalyzer
 
             InitializeWaveHeader(ref data);
 
+            if (Path.GetExtension(filePath) == ".rmle")
+            {
+                data = Unencode(ref data);
+            }
+
             // Initialize the channels 2D array where each row is a channel and every column is a sample.
             int samplesPerChannel = Subchunk2Size / 2 / NumChannels;
             Channels = GetChannelsFromBytes(ref data, samplesPerChannel, dataIndex, NumChannels);
         }
+
+        /*private byte[] UnencodeRMLE(ref byte[] data)
+        {
+            List<byte> unencoded = new List<byte>();
+
+            byte[] header = new byte[dataIndex];
+            Array.Copy(data, header, dataIndex);
+
+            unencoded.AddRange(header);
+
+            byte currentByte = data[dataIndex];
+
+            for (int i = dataIndex + 1; i < data.Length; ++i)
+            {
+                if (currentByte == key)
+                {
+                    if (data.Length - 3 < i) break;
+                    for (int j = 0; j < data[i + 1]; ++j)
+                    {
+                        unencoded.Add(data[i + 2]);
+                    }
+                    i += 2;
+                }
+                else
+                {
+                    unencoded.Add(data[i]);
+                }
+            }
+
+            return unencoded.ToArray();
+        }*/
 
         private void InitializeWaveHeader(ref byte[] data)
         {
@@ -153,35 +193,276 @@ namespace WaveAnalyzer
             dataIndex += 4;
         }
 
-        private byte[] RunLengthEncode(byte[] bytes)
+        const uint patternVariance = 150;
+        const uint MaxPatternLength = 10000;
+
+        /*private byte[] Encode(byte[] bytes)
         {
             List<byte> encode = new List<byte>();
 
-            byte currentByte = bytes[0];
             int occurrences = 1;
+            int lastSequenceStart = 0;
+
+            void AddOccurrences(int index, int length)
+            {
+                lastSequenceStart = index + (length * occurrences);
+                while (occurrences > 0)
+                {
+                    encode.Add(occurrences > 255 ? (byte)255 : (byte)occurrences);
+
+                    int lengthCopy = length;
+                    while (lengthCopy > 0)
+                    {
+                        encode.Add(lengthCopy > 255 ? (byte)255 : (byte)lengthCopy);
+                        lengthCopy -= 255;
+                    }
+                    encode.Add(0);
+
+                    for (int i = index; i < index + length; ++i)
+                    {
+                        encode.Add(bytes[i]);
+                    }
+
+                    occurrences -= 255;
+                }
+                occurrences = 1;
+            }
+
+            for (int i = 0; i < bytes.Length; ++i)
+            {
+                bool foundPattern = false;
+                for (int j = i + 1; j < bytes.Length && j < i + MaxPatternLength; ++j)
+                {
+                    int length = 0;
+                    foundPattern = false;
+
+                    // This is where occurences of a certain pattern stack up, if one can be found.
+                    while (j < bytes.Length && bytes[i] == bytes[j])
+                    {
+                        int patternLength = foundPattern ? length : j - i;
+
+                        if (j + patternLength - 1 >= bytes.Length) break;
+
+                        bool isPattern = true;
+
+                        for (int k = 0; k < patternLength; ++k)
+                        {
+                            if (Math.Abs(bytes[i + k] - bytes[j + k]) > patternVariance)
+                            {
+                                isPattern = false;
+                                break;
+                            }
+                        }
+
+                        if (isPattern)
+                        {
+                            if (!foundPattern)
+                            {
+                                length = j - i;
+                                foundPattern = true;
+                            }
+
+                            ++occurrences;
+                            j += length;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    if (foundPattern)
+                    {
+                        AddOccurrences(i, length);
+                        i = j - 1;
+                        break;
+                    }
+                }
+
+                if (!foundPattern)
+                {
+                    AddOccurrences(i, 1);
+                }
+            }
+
+            int lastSequenceLength = bytes.Length - lastSequenceStart;
+            if (lastSequenceLength > 0)
+            {
+                AddOccurrences(lastSequenceStart, lastSequenceLength);
+            }
+
+            return encode.ToArray();
+        }*/
+
+        private byte[] Encode(byte[] bytes)
+        {
+            List<byte> encode = new List<byte>();
+
+            int occurrences = 1;
+            int lastSequenceStart = 0;
+
+            void AddOccurrences(int index, int length)
+            {
+                lastSequenceStart = index + (length * occurrences);
+                while (occurrences > 0)
+                {
+                    encode.Add(occurrences > 255 ? (byte)255 : (byte)occurrences);
+
+                    int lengthCopy = length;
+                    while (lengthCopy > 0)
+                    {
+                        encode.Add(lengthCopy > 255 ? (byte)255 : (byte)lengthCopy);
+                        lengthCopy -= 255;
+                    }
+                    encode.Add(0);
+
+                    for (int i = index; i < index + length; ++i)
+                    {
+                        encode.Add(bytes[i]);
+                    }
+
+                    occurrences -= 255;
+                }
+                occurrences = 1;
+            }
+
+            for (int i = 0; i < bytes.Length; ++i)
+            {
+                bool foundPattern = false;
+                for (int j = i + 1; j < bytes.Length && j < i + MaxPatternLength; ++j)
+                {
+                    int length = 0;
+                    foundPattern = false;
+
+                    // This is where occurences of a certain pattern stack up, if one can be found.
+                    while (j < bytes.Length && bytes[i] == bytes[j])
+                    {
+                        int patternLength = foundPattern ? length : j - i;
+
+                        if (j + patternLength - 1 >= bytes.Length) break;
+                        if (!foundPattern)
+                        {
+                            length = j - i;
+                            foundPattern = true;
+                        }
+
+                        ++occurrences;
+                        j += length;
+                    }
+
+                    if (foundPattern)
+                    {
+                        AddOccurrences(i, length);
+                        i = j - 1;
+                        break;
+                    }
+                }
+
+                if (!foundPattern)
+                {
+                    AddOccurrences(i, 1);
+                }
+            }
+
+            int lastSequenceLength = bytes.Length - lastSequenceStart;
+            if (lastSequenceLength > 0)
+            {
+                AddOccurrences(lastSequenceStart, lastSequenceLength);
+            }
+
+            return encode.ToArray();
+        }
+
+        private byte[] Unencode(ref byte[] data)
+        {
+            List<byte> unencoded = new List<byte>();
+
+            byte[] header = new byte[dataIndex];
+            Array.Copy(data, header, dataIndex);
+
+            unencoded.AddRange(header);
+
+            int index = dataIndex;
+
+            while (index < data.Length)
+            {
+                int occurrences = data[index++];
+                int length = 0;
+
+                while (data[index] != 0)
+                {
+                    length += data[index++];
+                }
+
+                ++index;
+
+                for (int i = 0; i < occurrences; ++i)
+                {
+                    for (int j = 0; j < length; ++j)
+                    {
+                        unencoded.Add(data[index + j]);
+                    }
+                }
+
+                index += length;
+            }
+
+            return unencoded.ToArray();
+        }
+
+        private byte[] ModifiedRunLengthEncode(byte[] bytes)
+        {
+            List<byte> encode = new List<byte>();
+
+            int occurrences = 1;
+            bool run = false;
+
+            void AddOccurrences(byte value)
+            {
+                if (run)
+                {
+                    while (occurrences > 255)
+                    {
+                        encode.Add(key);
+                        encode.Add(255);
+                        encode.Add(value);
+                        occurrences -= 255;
+                    }
+                    encode.Add(key);
+                    encode.Add((byte)occurrences);
+                    encode.Add(value);
+
+                    run = false;
+                }
+                else
+                {
+                    for (int j = 0; j < occurrences; ++j)
+                    {
+                        encode.Add(value);
+                    }
+                }
+            }
 
             for (int i = 1; i < bytes.Length; ++i)
             {
-                if (bytes[i] == currentByte)
+                if (bytes[i - 1] == key || occurrences >= 3)
+                {
+                    run = true;
+                }
+
+                if (bytes[i] == bytes[i - 1] && i < bytes.Length - 1)
                 {
                     ++occurrences;
                 }
                 else
                 {
-                    while (occurrences > 255)
-                    {
-                        encode.Add(255);
-                        encode.Add(currentByte);
-                        occurrences -= 255;
-                    }
+                    AddOccurrences(bytes[i - 1]);
 
-                    encode.Add((byte)occurrences);
-                    encode.Add(currentByte);
-
-                    currentByte = bytes[i];
                     occurrences = 1;
                 }
             }
+
+            AddOccurrences(bytes[bytes.Length - 1]);
 
             return encode.ToArray();
         }
@@ -209,20 +490,27 @@ namespace WaveAnalyzer
 
         public void Save()
         {
-            byte[] data = RunLengthEncode(GetBytesFromChannels(0));
-            byte[] newFileBytes = new byte[data.Length + DefaultHeaderLength];
-
-            Array.Copy(data, 0, newFileBytes, DefaultHeaderLength, data.Length);
-            Array.Copy(ConstructWaveHeader(), newFileBytes, DefaultHeaderLength);
-
             SaveFileDialog saveFileDialog = new SaveFileDialog()
             {
-                DefaultExt = ".wav",
-                Filter = "WAV files (*.wav)|*.wav|All files (*.*)|*.*"
+                DefaultExt = ".rmle",
+                Filter = "Modified RLE file|*.rmle|WAV files (*.wav)|*.wav|All files (*.*)|*.*"
             };
 
             if (saveFileDialog.ShowDialog() == true)
             {
+                byte[] data;
+                if (Path.GetExtension(saveFileDialog.FileName) == "." + saveFileDialog.DefaultExt) {
+                    data = Encode(GetBytesFromChannels(0));
+                }
+                else
+                {
+                    data = GetBytesFromChannels(0);
+                }
+                byte[] newFileBytes = new byte[data.Length + DefaultHeaderLength];
+
+                Array.Copy(data, 0, newFileBytes, DefaultHeaderLength, data.Length);
+                Array.Copy(ConstructWaveHeader(), newFileBytes, DefaultHeaderLength);
+
                 File.WriteAllBytes(saveFileDialog.FileName, newFileBytes);
             }
         }
