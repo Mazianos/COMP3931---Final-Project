@@ -42,12 +42,10 @@ namespace WaveAnalyzer
         private const int defaultByteRate = 176400;
         private const short defaultBlockAlign = 2;
         private const short defaultBitsPerSample = 16;
+        const uint MaxPatternLength = 10000;
 
         public Wave()
         {
-            System.Diagnostics.Trace.WriteLine(string.Join(",", Encode(new byte[] { 0, 1, 2, 5, 3, 0, 0, 1, 2, 3, 5, 5, })));
-
-
             // Write "RIFF".
             chunkID = RIFF;
             chunkSize = defaultChunkSize;
@@ -110,7 +108,7 @@ namespace WaveAnalyzer
             Channels = GetChannelsFromBytes(ref data, samplesPerChannel, dataIndex, NumChannels);
         }
 
-        /*private byte[] UnencodeRMLE(ref byte[] data)
+        private byte[] UnencodeRMLE(ref byte[] data)
         {
             List<byte> unencoded = new List<byte>();
 
@@ -139,7 +137,7 @@ namespace WaveAnalyzer
             }
 
             return unencoded.ToArray();
-        }*/
+        }
 
         private void InitializeWaveHeader(ref byte[] data)
         {
@@ -193,9 +191,7 @@ namespace WaveAnalyzer
             dataIndex += 4;
         }
 
-        const uint MaxPatternLength = 10000;
-
-        private byte[] Encode(byte[] bytes)
+        private byte[] LawsyEncode(byte[] bytes)
         {
             List<byte> encode = new List<byte>();
 
@@ -274,7 +270,7 @@ namespace WaveAnalyzer
             return encode.ToArray();
         }
 
-        private byte[] Unencode(ref byte[] data)
+        private byte[] LawsyUnencode(ref byte[] data)
         {
             List<byte> unencoded = new List<byte>();
 
@@ -401,7 +397,7 @@ namespace WaveAnalyzer
             {
                 byte[] data;
                 if (Path.GetExtension(saveFileDialog.FileName) == "." + saveFileDialog.DefaultExt) {
-                    data = Encode(GetBytesFromChannels(0));
+                    data = LawsyEncode(GetBytesFromChannels(0));
                 }
                 else
                 {
