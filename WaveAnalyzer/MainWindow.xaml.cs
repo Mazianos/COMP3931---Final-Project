@@ -21,7 +21,6 @@ namespace WaveAnalyzer
 
         private Wave wave;
         private WaveDrawer waveDrawer;
-        private WaveZoomer waveZoomer;
         private Commands commands;
         private Thread stopListener;
         private delegate void stopButtonDelegate();
@@ -41,7 +40,6 @@ namespace WaveAnalyzer
             InitializeComponent();
 
             waveDrawer = new WaveDrawer();
-            waveZoomer = new WaveZoomer();
             commands = new Commands();
             wave = new Wave();
 
